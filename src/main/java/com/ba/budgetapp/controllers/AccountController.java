@@ -1,9 +1,9 @@
-package com.ba.budgetapp;
+package com.ba.budgetapp.controllers;
 
 import javafx.fxml.FXML;
 import javafx.scene.control.Label;
 
-public class HelloController {
+public class AccountController {
     @FXML
     private Label welcomeText;
 
