@@ -6,6 +6,7 @@ module com.ba.budgetapp {
     requires java.sql;
 
     requires org.controlsfx.controls;
+    requires org.bouncycastle.provider;
 
     opens com.ba.budgetapp to javafx.fxml;
     opens com.ba.budgetapp.controllers to javafx.fxml;
