@@ -57,26 +57,14 @@ public class CategoryDAOImpl extends BaseDAO implements CategoryDAO {
 
         try (
                 Connection connection = getConnection();
-
-                PreparedStatement ps =
-                        connection.prepareStatement(INSERT)
+                PreparedStatement ps = connection.prepareStatement(INSERT)
         ) {
-
-            ps.setString(
-                    1,
-                    category.getCategoryName());
-
-            ps.setLong(
-                    2,
-                    category.getUserId());
-
+            ps.setString(1, category.getCategoryName());
+            ps.setLong(2, category.getUserId());
             return ps.executeUpdate() > 0;
-
         } catch (SQLException e) {
-
             e.printStackTrace();
         }
-
         return false;
     }
 
@@ -84,55 +72,35 @@ public class CategoryDAOImpl extends BaseDAO implements CategoryDAO {
     public Optional<Category> findById(Long id) {
 
         try (
-                Connection connection =
-                        DatabaseConnection.getConnection();
-
-                PreparedStatement ps =
-                        connection.prepareStatement(FIND_BY_ID)
+                Connection connection = DatabaseConnection.getConnection();
+                PreparedStatement ps = connection.prepareStatement(FIND_BY_ID)
         ) {
-
             ps.setLong(1, id);
-
             ResultSet rs = ps.executeQuery();
-
             if (rs.next()) {
-
                 return Optional.of(mapRow(rs));
             }
-
         } catch (SQLException e) {
-
             e.printStackTrace();
         }
-
         return Optional.empty();
     }
 
     @Override
     public List<Category> findAll() {
-
         List<Category> categories = new ArrayList<>();
 
         try (
-                Connection connection =
-                        DatabaseConnection.getConnection();
-
-                PreparedStatement ps =
-                        connection.prepareStatement(FIND_ALL);
-
+                Connection connection = DatabaseConnection.getConnection();
+                PreparedStatement ps = connection.prepareStatement(FIND_ALL);
                 ResultSet rs = ps.executeQuery()
         ) {
-
             while (rs.next()) {
-
                 categories.add(mapRow(rs));
             }
-
         } catch (SQLException e) {
-
             e.printStackTrace();
         }
-
         return categories;
     }
 
@@ -140,28 +108,15 @@ public class CategoryDAOImpl extends BaseDAO implements CategoryDAO {
     public boolean update(Category category) {
 
         try (
-                Connection connection =
-                        DatabaseConnection.getConnection();
-
-                PreparedStatement ps =
-                        connection.prepareStatement(UPDATE)
+                Connection connection = DatabaseConnection.getConnection();
+                PreparedStatement ps = connection.prepareStatement(UPDATE)
         ) {
-
-            ps.setString(
-                    1,
-                    category.getCategoryName());
-
-            ps.setLong(
-                    2,
-                    category.getCategoryId());
-
+            ps.setString(1, category.getCategoryName());
+            ps.setLong(2, category.getCategoryId());
             return ps.executeUpdate() > 0;
-
         } catch (SQLException e) {
-
             e.printStackTrace();
         }
-
         return false;
     }
 
@@ -169,42 +124,25 @@ public class CategoryDAOImpl extends BaseDAO implements CategoryDAO {
     public boolean delete(Long id) {
 
         try (
-                Connection connection =
-                        DatabaseConnection.getConnection();
-
-                PreparedStatement ps =
-                        connection.prepareStatement(DELETE)
+                Connection connection = DatabaseConnection.getConnection();
+                PreparedStatement ps = connection.prepareStatement(DELETE)
         ) {
-
             ps.setLong(1, id);
-
             return ps.executeUpdate() > 0;
-
         } catch (SQLException e) {
-
             e.printStackTrace();
         }
-
         return false;
     }
 
     /**
      * Convertit une ligne SQL en objet Category.
      */
-    private Category mapRow(ResultSet rs)
-            throws SQLException {
-
+    private Category mapRow(ResultSet rs) throws SQLException {
         Category category = new Category();
-
-        category.setCategoryId(
-                rs.getLong("category_id"));
-
-        category.setCategoryName(
-                rs.getString("category_name"));
-
-        category.setUserId(
-                rs.getLong("user_id"));
-
+        category.setCategoryId( rs.getLong("category_id"));
+        category.setCategoryName( rs.getString("category_name"));
+        category.setUserId( rs.getLong("user_id"));
         return category;
     }
 }

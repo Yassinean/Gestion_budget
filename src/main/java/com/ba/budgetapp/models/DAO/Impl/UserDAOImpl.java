@@ -1,34 +1,156 @@
 package com.ba.budgetapp.models.DAO.Impl;
 
+import com.ba.budgetapp.config.DatabaseConnection;
+import com.ba.budgetapp.models.DAO.BaseDAO;
 import com.ba.budgetapp.models.DAO.Interface.CrudDAO;
+import com.ba.budgetapp.models.entities.Category;
 import com.ba.budgetapp.models.entities.User;
 
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
-public class UserDAOImpl implements CrudDAO<User, Long> {
+import static com.ba.budgetapp.config.DatabaseConnection.getConnection;
+
+public class UserDAOImpl extends BaseDAO implements CrudDAO<User, Long> {
+
+    private static final String INSERT = """
+    INSERT INTO users(username,password,app_access)
+    VALUES(?,?,?)
+    """;
+
+    private static final String FIND_BY_ID = """
+    SELECT * FROM users
+    WHERE user_id=?
+    """;
+
+    private static final String FIND_ALL = """
+    SELECT * FROM users
+    ORDER BY username
+    """;
+
+    private static final String UPDATE = """
+    UPDATE users
+    SET username=?, password=?, app_access=?
+    WHERE user_id=?
+    """;
+
+    private static final String DELETE = """
+    DELETE FROM users
+    WHERE user_id=?
+    """;
+
+    private static final String FIND_BY_USERNAME = """
+    SELECT *
+    FROM users
+    WHERE username=?
+    """;
+
     @Override
-    public boolean create(User entity) {
+    public boolean create(User user) {
+        try (
+                Connection connection = getConnection();
+                PreparedStatement ps = connection.prepareStatement(INSERT)
+        ) {
+            ps.setLong(1, user.getUserId());
+            ps.setString(2, user.getUsername());
+            ps.setString(3, user.getPassword());
+            return ps.executeUpdate() > 0;
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
         return false;
     }
 
     @Override
-    public Optional<User> findById(Long aLong) {
+    public Optional<User> findById(Long id) {
+        try (
+                Connection connection = DatabaseConnection.getConnection();
+                PreparedStatement ps = connection.prepareStatement(FIND_BY_ID)
+        ) {
+            ps.setLong(1, id);
+            ResultSet rs = ps.executeQuery();
+            if (rs.next()) {
+                return Optional.of(mapRow(rs));
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return Optional.empty();
+    }
+
+    public Optional<User> findByUserName(String nom) {
+        try (
+                Connection connection = DatabaseConnection.getConnection();
+                PreparedStatement ps = connection.prepareStatement(FIND_BY_USERNAME)
+        ) {
+            ps.setString(1, nom);
+            ResultSet rs = ps.executeQuery();
+            if (rs.next()) {
+                return Optional.of(mapRow(rs));
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
         return Optional.empty();
     }
 
     @Override
     public List<User> findAll() {
-        return List.of();
+        List<User> users = new ArrayList<>();
+        try (
+                Connection connection = DatabaseConnection.getConnection();
+                PreparedStatement ps = connection.prepareStatement(FIND_ALL);
+                ResultSet rs = ps.executeQuery()
+        ) {
+            while (rs.next()) {
+                users.add(mapRow(rs));
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return users;
     }
 
     @Override
-    public boolean update(User entity) {
+    public boolean update(User user) {
+        try (
+                Connection connection = DatabaseConnection.getConnection();
+                PreparedStatement ps = connection.prepareStatement(UPDATE)
+        ) {
+            ps.setString(1, user.getUsername());
+            ps.setString(2, user.getPassword());
+            return ps.executeUpdate() > 0;
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
         return false;
     }
 
     @Override
-    public boolean delete(Long aLong) {
+    public boolean delete(Long id) {
+        try (
+                Connection connection = DatabaseConnection.getConnection();
+                PreparedStatement ps = connection.prepareStatement(DELETE)
+        ) {
+            ps.setLong(1, id);
+            return ps.executeUpdate() > 0;
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
         return false;
+    }
+
+    private User mapRow(ResultSet rs) throws SQLException {
+        User user = new User();
+        user.setUserId(rs.getLong("user_id"));
+        user.setUsername(rs.getString("username"));
+        user.setPassword(rs.getString("password"));
+        user.setAppAccess(rs.getBoolean("app_access"));
+        return user;
     }
 }
