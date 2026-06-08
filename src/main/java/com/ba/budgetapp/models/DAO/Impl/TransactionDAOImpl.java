@@ -22,11 +22,10 @@ public class TransactionDAOImpl
                 description,
                 transaction_date,
                 transaction_type,
-                cleared,
                 account_id,
                 category_id
             )
-            VALUES(?,?,?,?,?,?,?)
+            VALUES(?,?,?,?,?,?)
             """;
 
     private static final String FIND_BY_ID = """
@@ -84,16 +83,12 @@ public class TransactionDAOImpl
                     4,
                     transaction.getTransactionType().name());
 
-            ps.setBoolean(
-                    5,
-                    transaction.isCleared());
-
             ps.setLong(
-                    6,
+                    5,
                     transaction.getAccountId());
 
             ps.setLong(
-                    7,
+                    6,
                     transaction.getCategoryId());
 
             return ps.executeUpdate() > 0;
@@ -182,10 +177,6 @@ public class TransactionDAOImpl
             ps.setString(
                     4,
                     transaction.getTransactionType().name());
-
-            ps.setBoolean(
-                    5,
-                    transaction.isCleared());
 
             ps.setLong(
                     6,
@@ -403,9 +394,7 @@ public class TransactionDAOImpl
         transaction.setTransactionDate(rs.getDate("transaction_date").toLocalDate());
 
         transaction.setTransactionType(TransactionType.valueOf(rs.getString("transaction_type")));
-
-        transaction.setCleared(rs.getBoolean("cleared"));
-
+        
         transaction.setAccountId(rs.getLong("account_id"));
 
         transaction.setCategoryId(rs.getLong("category_id"));
