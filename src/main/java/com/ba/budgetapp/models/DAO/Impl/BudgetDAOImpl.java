@@ -1,7 +1,7 @@
 package com.ba.budgetapp.models.DAO.Impl;
 
 import com.ba.budgetapp.models.DAO.BaseDAO;
-import com.ba.budgetapp.models.DAO.Interface.CrudDAO;
+import com.ba.budgetapp.models.DAO.Interface.BudgetDAO;
 import com.ba.budgetapp.models.entities.Budget;
 
 import java.sql.*;
@@ -9,13 +9,13 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
-public class BudgetDAOImpl extends BaseDAO implements CrudDAO<Budget, Long> {
+public class BudgetDAOImpl extends BaseDAO implements BudgetDAO {
 
     private static final String INSERT = """
             INSERT INTO budgets(
                 amount,
                 budget_month,
-                category_id
+                user_id
             )
             VALUES (?, ?, ?)
             """;
@@ -26,10 +26,10 @@ public class BudgetDAOImpl extends BaseDAO implements CrudDAO<Budget, Long> {
             WHERE budget_id = ?
             """;
 
-    private static final String FIND_BY_CATEGORY = """
+    private static final String FIND_BY_USER = """
             SELECT *
             FROM budgets
-            WHERE category_id = ?
+            WHERE user_id = ?
             """;
 
     private static final String FIND_ALL = """
@@ -42,7 +42,7 @@ public class BudgetDAOImpl extends BaseDAO implements CrudDAO<Budget, Long> {
             UPDATE budgets
             SET amount = ?,
                 budget_month = ?,
-                category_id = ?
+                user_id = ?
             WHERE budget_id = ?
             """;
 
@@ -60,7 +60,7 @@ public class BudgetDAOImpl extends BaseDAO implements CrudDAO<Budget, Long> {
 
             ps.setBigDecimal(1, budget.getAmount());
             ps.setDate(2, Date.valueOf(budget.getBudgetMonth()));
-            ps.setLong(3, budget.getCategoryId());
+            ps.setLong(3, budget.getUserId());
 
             return ps.executeUpdate() > 0;
 
@@ -126,7 +126,7 @@ public class BudgetDAOImpl extends BaseDAO implements CrudDAO<Budget, Long> {
 
             ps.setBigDecimal(1, budget.getAmount());
             ps.setDate(2, Date.valueOf(budget.getBudgetMonth()));
-            ps.setLong(3, budget.getCategoryId());
+            ps.setLong(3, budget.getUserId());
             ps.setLong(4, budget.getBudgetId());
 
             return ps.executeUpdate() > 0;
@@ -157,16 +157,16 @@ public class BudgetDAOImpl extends BaseDAO implements CrudDAO<Budget, Long> {
         return false;
     }
 
-    public List<Budget> findByCategory(Long categoryId) {
+    public List<Budget> findByUser(Long userId) {
 
         List<Budget> budgets = new ArrayList<>();
 
         try (
                 Connection connection = getConnection();
-                PreparedStatement ps = connection.prepareStatement(FIND_BY_CATEGORY)
+                PreparedStatement ps = connection.prepareStatement(FIND_BY_USER)
         ) {
 
-            ps.setLong(1, categoryId);
+            ps.setLong(1, userId);
 
             try (ResultSet rs = ps.executeQuery()) {
 
@@ -191,7 +191,7 @@ public class BudgetDAOImpl extends BaseDAO implements CrudDAO<Budget, Long> {
         budget.setBudgetMonth(
                 rs.getDate("budget_month").toLocalDate()
         );
-        budget.setCategoryId(rs.getLong("category_id"));
+        budget.setUserId(rs.getLong("user_id"));
 
         return budget;
     }

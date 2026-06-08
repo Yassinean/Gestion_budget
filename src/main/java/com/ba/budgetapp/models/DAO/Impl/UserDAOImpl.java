@@ -2,8 +2,7 @@ package com.ba.budgetapp.models.DAO.Impl;
 
 import com.ba.budgetapp.config.DatabaseConnection;
 import com.ba.budgetapp.models.DAO.BaseDAO;
-import com.ba.budgetapp.models.DAO.Interface.CrudDAO;
-import com.ba.budgetapp.models.entities.Category;
+import com.ba.budgetapp.models.DAO.Interface.UserDAO;
 import com.ba.budgetapp.models.entities.User;
 
 import java.sql.Connection;
@@ -14,9 +13,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
-import static com.ba.budgetapp.config.DatabaseConnection.getConnection;
-
-public class UserDAOImpl extends BaseDAO implements CrudDAO<User, Long> {
+public class UserDAOImpl extends BaseDAO implements UserDAO {
 
     private static final String INSERT = """
     INSERT INTO users(username,password,app_access)
@@ -56,9 +53,9 @@ public class UserDAOImpl extends BaseDAO implements CrudDAO<User, Long> {
                 Connection connection = getConnection();
                 PreparedStatement ps = connection.prepareStatement(INSERT)
         ) {
-            ps.setLong(1, user.getUserId());
-            ps.setString(2, user.getUsername());
-            ps.setString(3, user.getPassword());
+            ps.setString(1, user.getUsername());
+            ps.setString(2, user.getPassword());
+            ps.setBoolean(3, user.isAppAccess());
             return ps.executeUpdate() > 0;
         } catch (SQLException e) {
             e.printStackTrace();
@@ -124,6 +121,8 @@ public class UserDAOImpl extends BaseDAO implements CrudDAO<User, Long> {
         ) {
             ps.setString(1, user.getUsername());
             ps.setString(2, user.getPassword());
+            ps.setBoolean(3, user.isAppAccess());
+            ps.setLong(4, user.getUserId());
             return ps.executeUpdate() > 0;
         } catch (SQLException e) {
             e.printStackTrace();

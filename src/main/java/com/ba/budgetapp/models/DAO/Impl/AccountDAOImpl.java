@@ -2,7 +2,7 @@ package com.ba.budgetapp.models.DAO.Impl;
 
 import com.ba.budgetapp.config.DatabaseConnection;
 import com.ba.budgetapp.models.DAO.BaseDAO;
-import com.ba.budgetapp.models.DAO.Interface.CrudDAO;
+import com.ba.budgetapp.models.DAO.Interface.AccountDAO;
 import com.ba.budgetapp.models.entities.Account;
 
 import java.sql.Connection;
@@ -12,7 +12,7 @@ import java.sql.SQLException;
 import java.util.List;
 import java.util.Optional;
 
-public class AccountDAOImpl extends BaseDAO implements CrudDAO<Account, Long> {
+public class AccountDAOImpl extends BaseDAO implements AccountDAO {
 
     private static final String INSERT =
             """
@@ -47,10 +47,9 @@ public class AccountDAOImpl extends BaseDAO implements CrudDAO<Account, Long> {
                 Connection connection = getConnection();
                 PreparedStatement ps = connection.prepareStatement(INSERT)
         ) {
-            ps.setLong(1, account.getAccountId());
-            ps.setString(2, account.getAccountName());
-            ps.setBoolean(3, account.isActive());
-            ps.setLong(4, account.getUserId());
+            ps.setString(1, account.getAccountName());
+            ps.setBoolean(2, account.isActive());
+            ps.setLong(3, account.getUserId());
             return ps.executeUpdate() > 0;
         } catch (SQLException e) {
             e.printStackTrace();

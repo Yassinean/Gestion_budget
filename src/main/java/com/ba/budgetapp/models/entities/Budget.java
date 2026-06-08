@@ -14,7 +14,7 @@ public class Budget {
     private Long budgetId;
     private BigDecimal amount;
     private LocalDate budgetMonth;
-    private Long categoryId;
+    private Long userId;
 
     public Budget() {
     }
@@ -22,12 +22,12 @@ public class Budget {
     public Budget(Long budgetId,
                   BigDecimal amount,
                   LocalDate budgetMonth,
-                  Long categoryId) {
+                  Long userId) {
 
         this.budgetId = budgetId;
         this.amount = amount;
         this.budgetMonth = budgetMonth;
-        this.categoryId = categoryId;
+        this.userId = userId;
     }
 
     public Long getBudgetId() {
@@ -68,18 +68,18 @@ public class Budget {
         this.budgetMonth = budgetMonth;
     }
 
-    public Long getCategoryId() {
-        return categoryId;
+    public Long getUserId() {
+        return userId;
     }
 
-    public void setCategoryId(Long categoryId) {
+    public void setUserId(Long userId) {
 
-        if (categoryId == null || categoryId <= 0) {
+        if (userId == null || userId <= 0) {
             throw new IllegalArgumentException(
-                    "Catégorie invalide");
+                    "Utilisateur invalide");
         }
 
-        this.categoryId = categoryId;
+        this.userId = userId;
     }
 
     @Override
@@ -105,6 +105,8 @@ public class Budget {
         return "Budget{" +
                 "budgetId=" + budgetId +
                 ", amount=" + amount +
+                ", budgetMonth=" + budgetMonth +
+                ", userId=" + userId +
                 '}';
     }
 }

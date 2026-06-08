@@ -21,8 +21,6 @@ public class Transaction {
 
     private TransactionType transactionType;
 
-    private boolean cleared;
-
     private Long accountId;
 
     private Long categoryId;
@@ -35,7 +33,6 @@ public class Transaction {
                        String description,
                        LocalDate transactionDate,
                        TransactionType transactionType,
-                       boolean cleared,
                        Long accountId,
                        Long categoryId) {
 
@@ -44,7 +41,6 @@ public class Transaction {
         this.description = description;
         this.transactionDate = transactionDate;
         this.transactionType = transactionType;
-        this.cleared = cleared;
         this.accountId = accountId;
         this.categoryId = categoryId;
     }
@@ -116,14 +112,6 @@ public class Transaction {
         }
 
         this.transactionType = transactionType;
-    }
-
-    public boolean isCleared() {
-        return cleared;
-    }
-
-    public void setCleared(boolean cleared) {
-        this.cleared = cleared;
     }
 
     public Long getAccountId() {
