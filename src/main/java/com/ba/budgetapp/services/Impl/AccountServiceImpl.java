@@ -1,6 +1,8 @@
 package com.ba.budgetapp.services.Impl;
 
 
+import java.util.Optional;
+
 import com.ba.budgetapp.models.DAO.Impl.AccountDAOImpl;
 import com.ba.budgetapp.models.DAO.Interface.AccountDAO;
 import com.ba.budgetapp.models.entities.Account;
@@ -23,6 +25,11 @@ public class AccountServiceImpl implements AccountService {
     @Override
     public boolean deleteAccount(Long id) {
         return accountDAO.delete(id);
+    }
+
+    @Override
+    public Optional<Account> getAccountsByUser(Long userId) {
+        return accountDAO.findByUserId(userId);
     }
 
 }
