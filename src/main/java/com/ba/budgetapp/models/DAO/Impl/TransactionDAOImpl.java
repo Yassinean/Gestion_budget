@@ -7,10 +7,9 @@ import com.ba.budgetapp.models.entities.TransactionType;
 
 import java.math.BigDecimal;
 import java.sql.*;
+import java.sql.Date;
 import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 
 public class TransactionDAOImpl
         extends BaseDAO
@@ -46,7 +45,6 @@ public class TransactionDAOImpl
                 description = ?,
                 transaction_date = ?,
                 transaction_type = ?,
-                cleared = ?,
                 account_id = ?,
                 category_id = ?
             WHERE transaction_id = ?
@@ -65,27 +63,15 @@ public class TransactionDAOImpl
                 PreparedStatement ps =
                         connection.prepareStatement(INSERT)
         ) {
+            ps.setBigDecimal(1, transaction.getAmount());
 
-            ps.setBigDecimal(
-                    1,
-                    transaction.getAmount());
+            ps.setString(2, transaction.getDescription());
 
-            ps.setString(
-                    2,
-                    transaction.getDescription());
+            ps.setDate( 3, Date.valueOf(transaction.getTransactionDate()));
 
-            ps.setDate(
-                    3,
-                    Date.valueOf(
-                            transaction.getTransactionDate()));
+            ps.setString(4, transaction.getTransactionType().name());
 
-            ps.setString(
-                    4,
-                    transaction.getTransactionType().name());
-
-            ps.setLong(
-                    5,
-                    transaction.getAccountId());
+            ps.setLong(5, transaction.getAccountId());
 
             ps.setLong(
                     6,
@@ -179,15 +165,15 @@ public class TransactionDAOImpl
                     transaction.getTransactionType().name());
 
             ps.setLong(
-                    6,
+                    5,
                     transaction.getAccountId());
 
             ps.setLong(
-                    7,
+                    6,
                     transaction.getCategoryId());
 
             ps.setLong(
-                    8,
+                    7,
                     transaction.getTransactionId());
 
             return ps.executeUpdate() > 0;
@@ -222,39 +208,40 @@ public class TransactionDAOImpl
     }
 
     @Override
-    public BigDecimal getTotalIncome() {
+    public Map<String, Double> getExpensesByCategory(Long userId) {
 
-        return getSumByType("INCOME");
-    }
+        String sql = """
+        SELECT c.category_name,
+               SUM(t.amount) AS total
+        FROM transactions t
+        JOIN categories c
+             ON t.category_id = c.category_id
+        JOIN accounts a
+             ON t.account_id = a.account_id
+        WHERE t.transaction_type = 'EXPENSE'
+        AND a.user_id = ?
+        GROUP BY c.category_name
+        """;
 
-    @Override
-    public BigDecimal getTotalExpense() {
-
-        return getSumByType("EXPENSE");
-    }
-
-    @Override
-    public BigDecimal getCurrentBalance() {
-
-        return getTotalIncome()
-                .subtract(getTotalExpense());
-    }
-
-    @Override
-    public long countTransactions() {
-
-        String sql =
-                "SELECT COUNT(*) FROM transactions";
+        Map<String, Double> result =
+                new HashMap<>();
 
         try (
                 Connection connection = getConnection();
                 PreparedStatement ps =
-                        connection.prepareStatement(sql);
-                ResultSet rs = ps.executeQuery()
+                        connection.prepareStatement(sql)
         ) {
 
-            if (rs.next()) {
-                return rs.getLong(1);
+            ps.setLong(1, userId);
+
+            try (ResultSet rs = ps.executeQuery()) {
+
+                while (rs.next()) {
+
+                    result.put(
+                            rs.getString("category_name"),
+                            rs.getDouble("total"));
+                }
             }
 
         } catch (SQLException e) {
@@ -262,6 +249,124 @@ public class TransactionDAOImpl
             e.printStackTrace();
         }
 
+        return result;
+    }
+
+    @Override
+    public BigDecimal getTotalIncome(Long userId) {
+        return getSumByType("INCOME", userId);
+    }
+
+    @Override
+    public BigDecimal getTotalExpense(Long userId) {
+        return getSumByType("EXPENSE" , userId);
+    }
+
+    @Override
+    public Map<String, Double> getMonthlyIncome(Long userId) {
+        String sql = """
+        SELECT MONTH(t.transaction_date) AS month,
+               SUM(t.amount) AS total
+        FROM transactions t
+        JOIN accounts a
+             ON t.account_id = a.account_id
+        WHERE t.transaction_type = 'INCOME'
+        AND a.user_id = ?
+        GROUP BY MONTH(t.transaction_date)
+        ORDER BY MONTH(t.transaction_date)
+        """;
+        Map<String, Double> data = new LinkedHashMap<>();
+
+        try (
+                Connection connection = getConnection();
+                PreparedStatement ps =
+                        connection.prepareStatement(sql)
+        ) {
+            ps.setLong(1, userId);
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+
+                    data.put(
+                            String.valueOf(
+                                    rs.getInt("month")),
+                            rs.getDouble("total"));
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return data;
+    }
+
+    @Override
+    public Map<String, Double> getMonthlyExpense(Long userId) {
+
+        String sql = """
+        SELECT MONTH(t.transaction_date) AS month,
+               SUM(t.amount) AS total
+        FROM transactions t
+        JOIN accounts a
+             ON t.account_id = a.account_id
+        WHERE t.transaction_type = 'EXPENSE'
+        AND a.user_id = ?
+        GROUP BY MONTH(t.transaction_date)
+        ORDER BY MONTH(t.transaction_date)
+        """;
+
+        Map<String, Double> data =
+                new LinkedHashMap<>();
+
+        try (
+                Connection connection = getConnection();
+                PreparedStatement ps =
+                        connection.prepareStatement(sql)
+        ) {
+            ps.setLong(1, userId);
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    data.put(
+                            String.valueOf(
+                                    rs.getInt("month")),
+                            rs.getDouble("total"));
+                }
+            }
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return data;
+    }
+
+    @Override
+    public BigDecimal getCurrentBalance(Long userId) {
+
+        return getTotalIncome(userId)
+                .subtract(getTotalExpense(userId));
+    }
+
+    @Override
+    public long countTransactions(Long userId) {
+        String sql = """
+        SELECT COUNT(*)
+        FROM transactions t
+        JOIN accounts a
+             ON t.account_id = a.account_id
+        WHERE a.user_id = ?
+        """;
+        try (
+                Connection connection = getConnection();
+                PreparedStatement ps =
+                        connection.prepareStatement(sql)
+        ) {
+            ps.setLong(1, userId);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    return rs.getLong(1);
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
         return 0;
     }
 
@@ -319,23 +424,26 @@ public class TransactionDAOImpl
     }
 
     private BigDecimal getSumByType(
-            String type) {
+            String type,
+            Long userId) {
 
         String sql = """
-                SELECT COALESCE(
-                    SUM(amount),
-                    0
-                )
-                FROM transactions
-                WHERE transaction_type = ?
-                """;
+        SELECT COALESCE(SUM(t.amount),0)
+        FROM transactions t
+        JOIN accounts a
+             ON t.account_id = a.account_id
+        WHERE t.transaction_type = ?
+        AND a.user_id = ?
+        """;
 
         try (
                 Connection connection = getConnection();
-                PreparedStatement ps = connection.prepareStatement(sql)
+                PreparedStatement ps =
+                        connection.prepareStatement(sql)
         ) {
 
             ps.setString(1, type);
+            ps.setLong(2, userId);
 
             ResultSet rs = ps.executeQuery();
 
@@ -344,7 +452,6 @@ public class TransactionDAOImpl
             }
 
         } catch (SQLException e) {
-
             e.printStackTrace();
         }
 
