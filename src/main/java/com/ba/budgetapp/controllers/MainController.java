@@ -1,0 +1,62 @@
+package com.ba.budgetapp.controllers;
+
+import javafx.fxml.FXML;
+import javafx.fxml.FXMLLoader;
+import javafx.scene.Parent;
+import javafx.scene.layout.StackPane;
+
+import java.io.IOException;
+
+public class MainController {
+
+    @FXML
+    private StackPane contentPane;
+
+    @FXML
+    public void initialize() {
+        loadView("/com/ba/budgetapp/Views/dashboard.FXML");
+    }
+
+    @FXML
+    private void showDashboard() {
+        loadView("/com/ba/budgetapp/Views/dashboard.FXML");
+    }
+
+    @FXML
+    private void showTransactions() {
+        loadView("/com/ba/budgetapp/Views/transactions.FXML");
+    }
+
+    @FXML
+    private void showCategories() {
+        loadView("/com/ba/budgetapp/Views/categories.FXML");
+    }
+
+    @FXML
+    private void showAccounts() {
+        loadView("/com/ba/budgetapp/Views/accounts.FXML");
+    }
+
+    @FXML
+    private void showBudgets() {
+        loadView("/com/ba/budgetapp/Views/budgets.FXML");
+    }
+
+    @FXML
+    private void exitApplication() {
+        System.exit(0);
+    }
+
+    private void loadView(String path) {
+        try {
+            var resource = getClass().getResource(path);
+            if (resource == null) {
+                throw new IOException("FXML resource not found: " + path);
+            }
+            Parent view = FXMLLoader.load(resource);
+            contentPane.getChildren().setAll(view);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+}
