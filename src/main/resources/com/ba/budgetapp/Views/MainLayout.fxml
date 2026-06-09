@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<BorderPane fx:id="rootPane"
+            xmlns="http://javafx.com/javafx"
+            xmlns:fx="http://javafx.com/fxml"
+            fx:controller="com.ba.budgetapp.controllers.MainController">
+
+    <!-- HEADER -->
+
+    <top>
+
+        <HBox spacing="15"
+              alignment="CENTER_LEFT"
+              styleClass="header">
+
+            <Label text="💰 Budget Manager"
+                   styleClass="app-title"/>
+
+        </HBox>
+
+    </top>
+
+    <!-- MENU LATERAL -->
+
+    <left>
+
+        <VBox spacing="10"
+              prefWidth="220"
+              styleClass="sidebar">
+
+            <Button fx:id="dashboardBtn"
+                    text="Dashboard"
+                    maxWidth="Infinity"
+                    onAction="#showDashboard"/>
+
+            <Button fx:id="transactionBtn"
+                    text="Transactions"
+                    maxWidth="Infinity"
+                    onAction="#showTransactions"/>
+
+            <Button fx:id="categoryBtn"
+                    text="Categories"
+                    maxWidth="Infinity"
+                    onAction="#showCategories"/>
+
+            <Button fx:id="accountBtn"
+                    text="Accounts"
+                    maxWidth="Infinity"
+                    onAction="#showAccounts"/>
+
+            <Button fx:id="budgetBtn"
+                    text="Budgets"
+                    maxWidth="Infinity"
+                    onAction="#showBudgets"/>
+
+            <Separator/>
+
+            <Button fx:id="exitBtn"
+                    text="Quitter"
+                    maxWidth="Infinity"
+                    onAction="#exitApplication"/>
+
+        </VBox>
+
+    </left>
+
+    <!-- CONTENU DYNAMIQUE -->
+
+    <center>
+
+        <StackPane fx:id="contentPane"/>
+
+    </center>
+
+    <!-- FOOTER -->
+
+    <bottom>
+
+        <HBox alignment="CENTER_LEFT"
+              styleClass="footer">
+
+            <Label text="Budget Manager - JavaFX MVC DAO"/>
+
+        </HBox>
+
+    </bottom>
+
+</BorderPane>

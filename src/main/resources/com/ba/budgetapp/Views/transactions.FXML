@@ -1,0 +1,119 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<BorderPane xmlns="http://javafx.com/javafx"
+            xmlns:fx="http://javafx.com/fxml"
+            fx:controller="com.ba.budgetapp.controllers.TransactionController">
+
+    <top>
+
+        <VBox spacing="15" styleClass="content-container">
+
+            <Label text="Gestion des Transactions"
+                   styleClass="page-title"/>
+
+            <GridPane hgap="10" vgap="10">
+
+                <Label text="Montant :" GridPane.rowIndex="0" GridPane.columnIndex="0"/>
+                <TextField fx:id="amountField"
+                           promptText="Montant"
+                           GridPane.rowIndex="0"
+                           GridPane.columnIndex="1"/>
+
+                <Label text="Description :" GridPane.rowIndex="1" GridPane.columnIndex="0"/>
+                <TextField fx:id="descriptionField"
+                           promptText="Description"
+                           GridPane.rowIndex="1"
+                           GridPane.columnIndex="1"/>
+
+                <Label text="Date :" GridPane.rowIndex="2" GridPane.columnIndex="0"/>
+                <DatePicker fx:id="datePicker"
+                            GridPane.rowIndex="2"
+                            GridPane.columnIndex="1"/>
+
+                <Label text="Catégorie :" GridPane.rowIndex="0" GridPane.columnIndex="2"/>
+                <ComboBox fx:id="categoryCombo"
+                          prefWidth="200"
+                          GridPane.rowIndex="0"
+                          GridPane.columnIndex="3"/>
+
+                <Label text="Compte :" GridPane.rowIndex="1" GridPane.columnIndex="2"/>
+                <ComboBox fx:id="accountCombo"
+                          prefWidth="200"
+                          GridPane.rowIndex="1"
+                          GridPane.columnIndex="3"/>
+
+                <Label text="Type :" GridPane.rowIndex="2" GridPane.columnIndex="2"/>
+
+                <ComboBox fx:id="typeCombo"
+                          prefWidth="200"
+                          GridPane.rowIndex="2"
+                          GridPane.columnIndex="3"/>
+
+            </GridPane>
+
+            <HBox spacing="10">
+
+                <Button text="Ajouter"
+                        onAction="#addTransaction"/>
+
+                <Button text="Modifier"
+                        onAction="#updateTransaction"/>
+
+                <Button text="Supprimer"
+                        onAction="#deleteTransaction"/>
+
+                <Button text="Actualiser"
+                        onAction="#refreshTable"/>
+
+            </HBox>
+
+            <Separator/>
+
+            <HBox spacing="10">
+
+                <TextField fx:id="searchField"
+                           promptText="Recherche..."/>
+
+                <Button text="Rechercher"
+                        onAction="#searchTransaction"/>
+
+            </HBox>
+
+        </VBox>
+
+    </top>
+
+    <center>
+
+        <TableView fx:id="transactionTable">
+
+            <columns>
+
+                <TableColumn fx:id="idColumn"
+                             text="ID"/>
+
+                <TableColumn fx:id="dateColumn"
+                             text="Date"/>
+
+                <TableColumn fx:id="descriptionColumn"
+                             text="Description"/>
+
+                <TableColumn fx:id="typeColumn"
+                             text="Type"/>
+
+                <TableColumn fx:id="categoryColumn"
+                             text="Catégorie"/>
+
+                <TableColumn fx:id="amountColumn"
+                             text="Montant"/>
+
+            </columns>
+
+        </TableView>
+
+    </center>
+
+</BorderPane>

@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.chart.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<VBox xmlns="http://javafx.com/javafx"
+      xmlns:fx="http://javafx.com/fxml"
+      fx:controller="com.ba.budgetapp.controllers.DashboardController"
+      spacing="20"
+      styleClass="dashboard-root">
+
+    <Label text="Dashboard"
+           styleClass="page-title"/>
+
+    <HBox spacing="15">
+
+        <VBox styleClass="income-card">
+            <Label text="Total Revenus"/>
+            <Label fx:id="totalIncomeLabel"/>
+        </VBox>
+
+        <VBox styleClass="expense-card">
+            <Label text="Total Dépenses"/>
+            <Label fx:id="totalExpenseLabel"/>
+        </VBox>
+
+        <VBox styleClass="balance-card">
+            <Label text="Solde"/>
+            <Label fx:id="balanceLabel"/>
+        </VBox>
+
+        <VBox styleClass="transaction-card">
+            <Label text="Transactions"/>
+            <Label fx:id="transactionCountLabel"/>
+        </VBox>
+
+    </HBox>
+
+    <HBox spacing="20">
+
+        <PieChart fx:id="expensePieChart"
+                  prefWidth="500"
+                  prefHeight="400"/>
+
+        <BarChart fx:id="monthlyBarChart"
+                  prefWidth="700"
+                  prefHeight="400">
+
+            <xAxis>
+                <CategoryAxis/>
+            </xAxis>
+
+            <yAxis>
+                <NumberAxis/>
+            </yAxis>
+
+        </BarChart>
+
+    </HBox>
+
+</VBox>
