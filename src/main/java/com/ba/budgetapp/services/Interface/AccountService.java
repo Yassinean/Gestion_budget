@@ -9,4 +9,5 @@ public interface AccountService {
     boolean updateAccount(Account account);
     boolean deleteAccount(Long id);
     Optional<Account> getAccountsByUser(Long userId);
+    boolean isAccountActive(Long userId);
 }

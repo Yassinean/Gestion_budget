@@ -100,7 +100,7 @@ public class TransactionController {
 
     @FXML
     private void refreshTable() {
-        transactionTable.getItems().setAll(transactionService.getAllTransactions());
+        transactionTable.getItems().setAll(transactionService.findAllByUserId(SessionManager.getCurrentUserId()));
     }
 
     @FXML
@@ -165,7 +165,7 @@ public class TransactionController {
         }
 
         transactionTable.getItems().setAll(
-                transactionService.getAllTransactions().stream()
+                transactionService.findAllByUserId(SessionManager.getCurrentUserId()).stream()
                         .filter(t -> t.getDescription().toLowerCase().contains(query.toLowerCase()))
                         .toList()
         );

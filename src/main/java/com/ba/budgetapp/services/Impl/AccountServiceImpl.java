@@ -32,4 +32,10 @@ public class AccountServiceImpl implements AccountService {
         return accountDAO.findByUserId(userId);
     }
 
+    @Override
+    public boolean isAccountActive(Long userId) {
+        Optional<Account> accountOpt = accountDAO.findByUserId(userId);
+        return accountOpt.map(Account::isActive).orElse(false);
+    }
+
 }
