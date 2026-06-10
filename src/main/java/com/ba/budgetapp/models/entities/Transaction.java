@@ -25,6 +25,8 @@ public class Transaction {
 
     private Long categoryId;
 
+    private String categoryName;
+
     public Transaction() {
     }
 
@@ -140,6 +142,14 @@ public class Transaction {
         }
 
         this.categoryId = categoryId;
+    }
+
+    public String getCategoryName(){
+        return categoryName;
+    }
+
+    public void setCategoryName(String categoryName) {
+        this.categoryName = categoryName;
     }
 
     @Override

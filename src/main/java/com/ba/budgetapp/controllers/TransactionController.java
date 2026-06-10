@@ -8,6 +8,7 @@ import com.ba.budgetapp.services.Interface.AccountService;
 import com.ba.budgetapp.services.Interface.CategoryService;
 import com.ba.budgetapp.services.Interface.ServiceFactory;
 import com.ba.budgetapp.services.Interface.TransactionService;
+import com.ba.budgetapp.utils.AlertUtil;
 import com.ba.budgetapp.utils.SessionManager;
 
 import javafx.fxml.FXML;
@@ -28,10 +29,13 @@ public class TransactionController {
     private DatePicker datePicker;
 
     @FXML
-    private ComboBox<Category> categoryCombo;
+    private TableColumn<Transaction, String> categoryColumn;
 
     @FXML
     private ComboBox<Account> accountCombo;
+
+    @FXML
+    private ComboBox<Category> categoryCombo;
 
     @FXML
     private ComboBox<TransactionType> typeCombo;
@@ -81,17 +85,17 @@ public class TransactionController {
         descriptionColumn.setCellValueFactory(new PropertyValueFactory<>("description"));
         typeColumn.setCellValueFactory(new PropertyValueFactory<>("transactionType"));
         amountColumn.setCellValueFactory(new PropertyValueFactory<>("amount"));
+        categoryColumn.setCellValueFactory(new PropertyValueFactory<>("categoryName"));
     }
     
     private void loadCategories() {
-        categoryCombo.getItems().setAll(categoryService.getAllCategories());
+        Long userId = SessionManager.getCurrentUserId();
+        categoryCombo.getItems().setAll(categoryService.getCategoriesByUser(userId));
     }
 
     private void loadAccounts() {
         Long userId = SessionManager.getCurrentUserId();
-
-        accountService.getAccountsByUser(userId).ifPresent(accounts ->
-                accountCombo.getItems().setAll(accounts));
+        accountCombo.getItems().setAll(accountService.getActiveAccountsByUser(userId));
     }
 
     private void loadTransactionTypes() {
@@ -118,8 +122,7 @@ public class TransactionController {
             clearForm();
 
         } catch (Exception e) {
-            showError(
-                    "Données invalides");
+            AlertUtil.showError("Données invalides : " + e.getMessage());
         }
     }
 
@@ -127,7 +130,7 @@ public class TransactionController {
     private void updateTransaction() {
         Transaction selected = transactionTable.getSelectionModel().getSelectedItem();
         if (selected == null) {
-            showError("Veuillez sélectionner une transaction");
+            AlertUtil.showError("Veuillez sélectionner une transaction");
             return;
         }
         try {
@@ -141,7 +144,7 @@ public class TransactionController {
             refreshTable();
             clearForm();
         } catch (Exception e) {
-            showError("Erreur lors de la modification");
+            AlertUtil.showError("Erreur lors de la modification : " + e.getMessage());
         }
     }
 
@@ -149,10 +152,17 @@ public class TransactionController {
     private void deleteTransaction() {
         Transaction selected = transactionTable.getSelectionModel().getSelectedItem();
         if (selected == null) {
-            showError("Veuillez sélectionner une transaction");
+            AlertUtil.showError("Veuillez sélectionner une transaction");
             return;
         }
-        transactionService.deleteTransaction(selected.getTransactionId());
+        if (!AlertUtil.showConfirmation("Supprimer cette transaction ?")) {
+            return;
+        }
+        try {
+            transactionService.deleteTransaction(selected.getTransactionId());
+        } catch (Exception e) {
+            AlertUtil.showError("Erreur lors de la suppression : " + e.getMessage());
+        }
         refreshTable();
     }
 
@@ -165,9 +175,7 @@ public class TransactionController {
         }
 
         transactionTable.getItems().setAll(
-                transactionService.findAllByUserId(SessionManager.getCurrentUserId()).stream()
-                        .filter(t -> t.getDescription().toLowerCase().contains(query.toLowerCase()))
-                        .toList()
+                transactionService.searchTransactions(query)
         );
     }
 
@@ -178,13 +186,5 @@ public class TransactionController {
         categoryCombo.getSelectionModel().clearSelection();
         accountCombo.getSelectionModel().clearSelection();
         typeCombo.getSelectionModel().clearSelection();
-    }
-
-    private void showError(String message) {
-        Alert alert = new Alert(Alert.AlertType.ERROR);
-        alert.setTitle("Erreur");
-        alert.setHeaderText(null);
-        alert.setContentText(message);
-        alert.showAndWait();
     }
 }

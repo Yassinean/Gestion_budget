@@ -1,6 +1,7 @@
 package com.ba.budgetapp.services.Impl;
 
 
+import java.util.List;
 import java.util.Optional;
 
 import com.ba.budgetapp.models.DAO.Impl.AccountDAOImpl;
@@ -14,11 +15,13 @@ public class AccountServiceImpl implements AccountService {
 
     @Override
     public boolean createAccount(Account account) {
+        validateAccount(account);
         return accountDAO.create(account);
     }
 
     @Override
     public boolean updateAccount(Account account) {
+        validateAccount(account);
         return accountDAO.update(account);
     }
 
@@ -28,14 +31,29 @@ public class AccountServiceImpl implements AccountService {
     }
 
     @Override
-    public Optional<Account> getAccountsByUser(Long userId) {
+    public List<Account> getAccountsByUser(Long userId) {
         return accountDAO.findByUserId(userId);
     }
 
     @Override
-    public boolean isAccountActive(Long userId) {
-        Optional<Account> accountOpt = accountDAO.findByUserId(userId);
+    public List<Account> getActiveAccountsByUser(Long userId) {
+        return accountDAO.findActiveByUserId(userId);
+    }
+
+    @Override
+    public Optional<Account> getAccountByIdForUser(Long accountId, Long userId) {
+        return accountDAO.findByIdAndUserId(accountId, userId);
+    }
+
+    @Override
+    public boolean isAccountActive(Long accountId) {
+        Optional<Account> accountOpt = accountDAO.findById(accountId);
         return accountOpt.map(Account::isActive).orElse(false);
     }
 
+    private void validateAccount(Account account) {
+        if (account == null) {
+            throw new IllegalArgumentException("Compte invalide");
+        }
+    }
 }

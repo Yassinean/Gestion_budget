@@ -3,11 +3,10 @@ package com.ba.budgetapp.controllers;
 import com.ba.budgetapp.models.entities.User;
 import com.ba.budgetapp.services.Impl.UserServiceImpl;
 import com.ba.budgetapp.services.Interface.UserService;
+import com.ba.budgetapp.utils.AlertUtil;
+import com.ba.budgetapp.utils.NavigationUtil;
 import com.ba.budgetapp.utils.SessionManager;
 import javafx.fxml.FXML;
-import javafx.fxml.FXMLLoader;
-import javafx.scene.Scene;
-import javafx.scene.control.Alert;
 import javafx.scene.control.PasswordField;
 import javafx.scene.control.TextField;
 import javafx.stage.Stage;
@@ -41,30 +40,20 @@ public class LoginController {
             SessionManager.login(user.get());
             openMainLayout();
         } else {
-            Alert alert = new Alert(Alert.AlertType.ERROR);
-            alert.setHeaderText(null);
-            alert.setContentText("Nom d'utilisateur ou mot de passe incorrect");
-            alert.showAndWait();
+            AlertUtil.showError("Nom d'utilisateur ou mot de passe incorrect");
         }
     }
 
     private void openMainLayout() {
 
         try {
-
-            FXMLLoader loader =
-                    new FXMLLoader(
-                            getClass()
-                                    .getResource(
-                                            "/com/ba/budgetapp/Views/MainLayout.fxml"));
-
-            Scene scene = new Scene(loader.load());
             Stage stage = (Stage) usernameField
                             .getScene()
                             .getWindow();
-            stage.setScene(scene);
+            NavigationUtil.setScene(stage, "/com/ba/budgetapp/Views/MainLayout.fxml");
         } catch (Exception e) {
             e.printStackTrace();
+            AlertUtil.showError("Impossible d'ouvrir l'application.");
         }
     }
 
@@ -72,25 +61,17 @@ public class LoginController {
     private void goToRegister() {
 
         try {
-
-            FXMLLoader loader =
-                    new FXMLLoader(
-                            getClass().getResource(
-                                    "/com/ba/budgetapp/Views/Register.fxml"));
-
-            Scene scene =
-                    new Scene(loader.load());
-
             Stage stage =
                     (Stage) usernameField
                             .getScene()
                             .getWindow();
 
-            stage.setScene(scene);
+            NavigationUtil.setScene(stage, "/com/ba/budgetapp/Views/Register.fxml");
 
         } catch (Exception e) {
 
             e.printStackTrace();
+            AlertUtil.showError("Impossible d'ouvrir l'inscription.");
         }
     }
 }

@@ -13,11 +13,13 @@ public interface TransactionDAO extends CrudDAO<Transaction, Long> {
     BigDecimal getTotalExpense(Long userId);
     BigDecimal getCurrentBalance(Long userId);
     long countTransactions(Long userId);
-    List<Transaction> findByCategory(Long categoryId);
-    List<Transaction> findByDateRange(LocalDate start, LocalDate end);
-    List<Transaction> search(String keyword);
+    List<Transaction> findByCategory(Long categoryId, Long userId);
+    List<Transaction> findByDateRange(LocalDate start, LocalDate end, Long userId);
+    List<Transaction> search(String keyword, Long userId);
     Map<String, Double> getExpensesByCategory(Long userId);
     Map<String, Double> getMonthlyIncome(Long userId);
     Map<String, Double> getMonthlyExpense(Long userId);
     List<Transaction> findAllByUser(Long userId);
+    boolean updateForUser(Transaction transaction, Long userId);
+    boolean deleteForUser(Long transactionId, Long userId);
 }

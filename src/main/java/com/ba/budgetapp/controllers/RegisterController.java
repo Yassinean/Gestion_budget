@@ -3,10 +3,9 @@ package com.ba.budgetapp.controllers;
 import com.ba.budgetapp.models.entities.User;
 import com.ba.budgetapp.services.Impl.UserServiceImpl;
 import com.ba.budgetapp.services.Interface.UserService;
+import com.ba.budgetapp.utils.AlertUtil;
+import com.ba.budgetapp.utils.NavigationUtil;
 import javafx.fxml.FXML;
-import javafx.fxml.FXMLLoader;
-import javafx.scene.Scene;
-import javafx.scene.control.Alert;
 import javafx.scene.control.PasswordField;
 import javafx.scene.control.TextField;
 import javafx.stage.Stage;
@@ -37,12 +36,12 @@ public class RegisterController {
                 || password.isBlank()
                 || confirm.isBlank()) {
 
-            showError("Tous les champs sont obligatoires.");
+            AlertUtil.showError("Tous les champs sont obligatoires.");
             return;
         }
 
         if (!password.equals(confirm)) {
-            showError("Les mots de passe ne correspondent pas.");
+            AlertUtil.showError("Les mots de passe ne correspondent pas.");
             return;
         }
         User user = new User();
@@ -51,41 +50,22 @@ public class RegisterController {
         try {
             boolean created = userService.register(user);
             if (created) {
-                showInfo("Compte créé avec succès.");
+                AlertUtil.showInfo("Compte créé avec succès.");
                 goToLogin();
             }
         } catch (Exception e) {
-            showError(e.getMessage());
+            AlertUtil.showError(e.getMessage());
         }
     }
 
     @FXML
     private void goToLogin() {
         try {
-            FXMLLoader loader =
-                    new FXMLLoader(
-                            getClass().getResource(
-                                    "/com/ba/budgetapp/Views/login.FXML"));
-
-            Scene scene = new Scene(loader.load());
             Stage stage = (Stage) usernameField.getScene().getWindow();
-            stage.setScene(scene);
+            NavigationUtil.setScene(stage, "/com/ba/budgetapp/Views/login.FXML");
         } catch (Exception e) {
             e.printStackTrace();
+            AlertUtil.showError("Impossible d'ouvrir la connexion.");
         }
-    }
-
-    private void showError(String message) {
-        Alert alert = new Alert(Alert.AlertType.ERROR);
-        alert.setHeaderText(null);
-        alert.setContentText(message);
-        alert.showAndWait();
-    }
-
-    private void showInfo(String message) {
-        Alert alert = new Alert(Alert.AlertType.INFORMATION);
-        alert.setHeaderText(null);
-        alert.setContentText(message);
-        alert.showAndWait();
     }
 }
