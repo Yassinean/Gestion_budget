@@ -39,6 +39,22 @@ public class CategoryDAOImpl extends BaseDAO implements CategoryDAO {
             ORDER BY category_name
             """;
 
+    private static final String FIND_BY_USER_ID =
+            """
+            SELECT *
+            FROM categories
+            WHERE user_id = ?
+            ORDER BY category_name
+            """;
+
+    private static final String FIND_BY_ID_AND_USER_ID =
+            """
+            SELECT *
+            FROM categories
+            WHERE category_id = ?
+              AND user_id = ?
+            """;
+
     private static final String UPDATE =
             """
             UPDATE categories
@@ -118,6 +134,43 @@ public class CategoryDAOImpl extends BaseDAO implements CategoryDAO {
             e.printStackTrace();
         }
         return false;
+    }
+
+    @Override
+    public List<Category> findByUserId(Long userId) {
+        List<Category> categories = new ArrayList<>();
+
+        try (
+                Connection connection = DatabaseConnection.getConnection();
+                PreparedStatement ps = connection.prepareStatement(FIND_BY_USER_ID)
+        ) {
+            ps.setLong(1, userId);
+            ResultSet rs = ps.executeQuery();
+            while (rs.next()) {
+                categories.add(mapRow(rs));
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return categories;
+    }
+
+    @Override
+    public Optional<Category> findByIdAndUserId(Long categoryId, Long userId) {
+        try (
+                Connection connection = DatabaseConnection.getConnection();
+                PreparedStatement ps = connection.prepareStatement(FIND_BY_ID_AND_USER_ID)
+        ) {
+            ps.setLong(1, categoryId);
+            ps.setLong(2, userId);
+            ResultSet rs = ps.executeQuery();
+            if (rs.next()) {
+                return Optional.of(mapRow(rs));
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return Optional.empty();
     }
 
     @Override

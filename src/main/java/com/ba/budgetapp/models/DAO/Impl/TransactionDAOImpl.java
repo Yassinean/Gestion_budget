@@ -28,18 +28,26 @@ public class TransactionDAOImpl
             """;
 
     private static final String FIND_BY_ID = """
-            SELECT *
-            FROM transactions
-            WHERE transaction_id = ?
+            SELECT
+                t.*,
+                c.category_name
+            FROM transactions t
+            JOIN categories c
+                ON c.category_id = t.category_id
+            WHERE t.transaction_id = ?
             """;
 
     private static final String FIND_BY_USER = """
-            SELECT t.*
+            SELECT
+                t.*,
+                c.category_name
             FROM transactions t
+            JOIN categories c
+                ON c.category_id = t.category_id
             JOIN accounts a
                 ON t.account_id = a.account_id
             WHERE a.user_id = ?
-            ORDER BY t.transaction_date DESC;
+            ORDER BY t.transaction_date DESC
             """;
 
     private static final String UPDATE = """
@@ -53,9 +61,40 @@ public class TransactionDAOImpl
             WHERE transaction_id = ?
             """;
 
+    private static final String UPDATE_FOR_USER = """
+            UPDATE transactions t
+            JOIN accounts current_account
+                ON current_account.account_id = t.account_id
+            JOIN accounts new_account
+                ON new_account.account_id = ?
+            JOIN categories c
+                ON c.category_id = ?
+            SET t.amount = ?,
+                t.description = ?,
+                t.transaction_date = ?,
+                t.transaction_type = ?,
+                t.account_id = ?,
+                t.category_id = ?
+            WHERE t.transaction_id = ?
+              AND current_account.user_id = ?
+              AND new_account.user_id = ?
+              AND new_account.active = TRUE
+              AND c.user_id = ?
+            """;
+
     private static final String DELETE = """
             DELETE FROM transactions
             WHERE transaction_id = ?
+            """;
+
+    private static final String DELETE_FOR_USER = """
+            DELETE t
+            FROM transactions t
+            JOIN accounts a
+                ON a.account_id = t.account_id
+            WHERE t.transaction_id = ?
+              AND a.user_id = ?
+              AND a.active = TRUE
             """;
 
     @Override
@@ -193,6 +232,34 @@ public class TransactionDAOImpl
     }
 
     @Override
+    public boolean updateForUser(Transaction transaction, Long userId) {
+        try (
+                Connection connection = getConnection();
+                PreparedStatement ps = connection.prepareStatement(UPDATE_FOR_USER)
+        ) {
+            ps.setLong(1, transaction.getAccountId());
+            ps.setLong(2, transaction.getCategoryId());
+            ps.setBigDecimal(3, transaction.getAmount());
+            ps.setString(4, transaction.getDescription());
+            ps.setDate(5, Date.valueOf(transaction.getTransactionDate()));
+            ps.setString(6, transaction.getTransactionType().name());
+            ps.setLong(7, transaction.getAccountId());
+            ps.setLong(8, transaction.getCategoryId());
+            ps.setLong(9, transaction.getTransactionId());
+            ps.setLong(10, userId);
+            ps.setLong(11, userId);
+            ps.setLong(12, userId);
+
+            return ps.executeUpdate() > 0;
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+        return false;
+    }
+
+    @Override
     public boolean delete(Long id) {
 
         try (
@@ -207,6 +274,24 @@ public class TransactionDAOImpl
 
         } catch (SQLException e) {
 
+            e.printStackTrace();
+        }
+
+        return false;
+    }
+
+    @Override
+    public boolean deleteForUser(Long transactionId, Long userId) {
+        try (
+                Connection connection = getConnection();
+                PreparedStatement ps = connection.prepareStatement(DELETE_FOR_USER)
+        ) {
+            ps.setLong(1, transactionId);
+            ps.setLong(2, userId);
+
+            return ps.executeUpdate() > 0;
+
+        } catch (SQLException e) {
             e.printStackTrace();
         }
 
@@ -378,30 +463,50 @@ public class TransactionDAOImpl
 
     @Override
     public List<Transaction> findByCategory(
-            Long categoryId) {
+            Long categoryId,
+            Long userId) {
 
         String sql = """
-                SELECT *
-                FROM transactions
-                WHERE category_id = ?
+                SELECT
+                    t.*,
+                    c.category_name
+                FROM transactions t
+                JOIN categories c
+                    ON c.category_id = t.category_id
+                JOIN accounts a
+                    ON a.account_id = t.account_id
+                WHERE t.category_id = ?
+                  AND a.user_id = ?
+                  AND c.user_id = ?
                 """;
 
         return executeListQuery(
                 sql,
-                ps -> ps.setLong(1, categoryId));
+                ps -> {
+                    ps.setLong(1, categoryId);
+                    ps.setLong(2, userId);
+                    ps.setLong(3, userId);
+                });
     }
 
     @Override
     public List<Transaction> findByDateRange(
             LocalDate start,
-            LocalDate end) {
+            LocalDate end,
+            Long userId) {
 
         String sql = """
-                SELECT *
-                FROM transactions
-                WHERE transaction_date
-                BETWEEN ? AND ?
-                ORDER BY transaction_date DESC
+                SELECT
+                    t.*,
+                    c.category_name
+                FROM transactions t
+                JOIN categories c
+                    ON c.category_id = t.category_id
+                JOIN accounts a
+                    ON a.account_id = t.account_id
+                WHERE t.transaction_date BETWEEN ? AND ?
+                  AND a.user_id = ?
+                ORDER BY t.transaction_date DESC
                 """;
 
         return executeListQuery(
@@ -409,24 +514,36 @@ public class TransactionDAOImpl
                 ps -> {
                     ps.setDate(1, Date.valueOf(start));
                     ps.setDate(2, Date.valueOf(end));
+                    ps.setLong(3, userId);
                 });
     }
 
     @Override
     public List<Transaction> search(
-            String keyword) {
+            String keyword,
+            Long userId) {
 
         String sql = """
-                SELECT *
-                FROM transactions
-                WHERE description LIKE ?
+                SELECT
+                    t.*,
+                    c.category_name
+                FROM transactions t
+                JOIN categories c
+                    ON c.category_id = t.category_id
+                JOIN accounts a
+                    ON a.account_id = t.account_id
+                WHERE t.description LIKE ?
+                  AND a.user_id = ?
                 """;
 
         return executeListQuery(
                 sql,
-                ps -> ps.setString(
-                        1,
-                        "%" + keyword + "%"));
+                ps -> {
+                    ps.setString(
+                            1,
+                            "%" + keyword + "%");
+                    ps.setLong(2, userId);
+                });
     }
 
     private BigDecimal getSumByType(
@@ -511,6 +628,8 @@ public class TransactionDAOImpl
         transaction.setAccountId(rs.getLong("account_id"));
 
         transaction.setCategoryId(rs.getLong("category_id"));
+
+        transaction.setCategoryName(rs.getString("category_name"));
         return transaction;
     }
 

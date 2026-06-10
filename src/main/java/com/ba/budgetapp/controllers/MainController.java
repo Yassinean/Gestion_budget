@@ -1,8 +1,8 @@
 package com.ba.budgetapp.controllers;
 
+import com.ba.budgetapp.utils.AlertUtil;
+import com.ba.budgetapp.utils.NavigationUtil;
 import javafx.fxml.FXML;
-import javafx.fxml.FXMLLoader;
-import javafx.scene.Parent;
 import javafx.scene.layout.StackPane;
 
 import java.io.IOException;
@@ -49,14 +49,10 @@ public class MainController {
 
     private void loadView(String path) {
         try {
-            var resource = getClass().getResource(path);
-            if (resource == null) {
-                throw new IOException("FXML resource not found: " + path);
-            }
-            Parent view = FXMLLoader.load(resource);
-            contentPane.getChildren().setAll(view);
+            NavigationUtil.loadInto(contentPane, path);
         } catch (IOException e) {
             e.printStackTrace();
+            AlertUtil.showError("Impossible de charger la vue : " + path);
         }
     }
 }

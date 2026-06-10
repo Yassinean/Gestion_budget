@@ -15,7 +15,6 @@ import java.util.Objects;
 public class Account {
 
     private Long accountId;
-    private String accountName;
     private boolean active;
     private Long userId;
 
@@ -23,12 +22,10 @@ public class Account {
     }
 
     public Account(Long accountId,
-                   String accountName,
                    boolean active,
                    Long userId) {
 
         this.accountId = accountId;
-        this.accountName = accountName;
         this.active = active;
         this.userId = userId;
     }
@@ -39,20 +36,6 @@ public class Account {
 
     public void setAccountId(Long accountId) {
         this.accountId = accountId;
-    }
-
-    public String getAccountName() {
-        return accountName;
-    }
-
-    public void setAccountName(String accountName) {
-
-        if (accountName == null || accountName.isBlank()) {
-            throw new IllegalArgumentException(
-                    "Nom du compte obligatoire");
-        }
-
-        this.accountName = accountName;
     }
 
     public boolean isActive() {
@@ -95,6 +78,6 @@ public class Account {
 
     @Override
     public String toString() {
-        return accountName;
+        return "Compte " + accountId;
     }
 }
