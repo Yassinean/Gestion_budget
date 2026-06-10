@@ -33,10 +33,13 @@ public class TransactionDAOImpl
             WHERE transaction_id = ?
             """;
 
-    private static final String FIND_ALL = """
-            SELECT *
-            FROM transactions
-            ORDER BY transaction_date DESC
+    private static final String FIND_BY_USER = """
+            SELECT t.*
+            FROM transactions t
+            JOIN accounts a
+                ON t.account_id = a.account_id
+            WHERE a.user_id = ?
+            ORDER BY t.transaction_date DESC;
             """;
 
     private static final String UPDATE = """
@@ -92,8 +95,7 @@ public class TransactionDAOImpl
 
         try (
                 Connection connection = getConnection();
-                PreparedStatement ps =
-                        connection.prepareStatement(FIND_BY_ID)
+                PreparedStatement ps = connection.prepareStatement(FIND_BY_ID)
         ) {
 
             ps.setLong(1, id);
@@ -114,6 +116,11 @@ public class TransactionDAOImpl
 
     @Override
     public List<Transaction> findAll() {
+        return List.of();
+    }
+
+    @Override
+    public List<Transaction> findAllByUser(Long userId) {
 
         List<Transaction> transactions =
                 new ArrayList<>();
@@ -121,12 +128,11 @@ public class TransactionDAOImpl
         try (
                 Connection connection = getConnection();
                 PreparedStatement ps =
-                        connection.prepareStatement(FIND_ALL);
-                ResultSet rs = ps.executeQuery()
-        ) {
-
+                        connection.prepareStatement(FIND_BY_USER);
+                    ) {
+            ps.setLong(1, userId);
+            ResultSet rs = ps.executeQuery();
             while (rs.next()) {
-
                 transactions.add(mapRow(rs));
             }
 

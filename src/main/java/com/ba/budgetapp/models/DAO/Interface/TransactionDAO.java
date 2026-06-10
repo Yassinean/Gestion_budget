@@ -19,4 +19,5 @@ public interface TransactionDAO extends CrudDAO<Transaction, Long> {
     Map<String, Double> getExpensesByCategory(Long userId);
     Map<String, Double> getMonthlyIncome(Long userId);
     Map<String, Double> getMonthlyExpense(Long userId);
+    List<Transaction> findAllByUser(Long userId);
 }

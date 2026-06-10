@@ -4,6 +4,7 @@ import com.ba.budgetapp.models.entities.Transaction;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Optional;
 
 public interface TransactionService {
     boolean createTransaction(Transaction transaction);
@@ -12,7 +13,9 @@ public interface TransactionService {
 
     boolean deleteTransaction(Long id);
 
-    List<Transaction> getAllTransactions();
+    List<Transaction> findAllByUserId(Long userId);
+
+    Optional<Transaction> findById(Long transactionId);
 
     List<Transaction> searchTransactions(String keyword);
 
