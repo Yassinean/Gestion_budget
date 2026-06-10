@@ -1,0 +1,69 @@
+.root {
+    -fx-font-family: "Segoe UI";
+}
+
+.header {
+    -fx-background-color: #2563EB;
+    -fx-padding: 15;
+}
+
+.app-title {
+    -fx-font-size: 22px;
+    -fx-font-weight: bold;
+    -fx-text-fill: white;
+}
+
+.sidebar {
+    -fx-background-color: #1E293B;
+    -fx-padding: 15;
+}
+
+.sidebar .button {
+    -fx-background-radius: 8;
+    -fx-pref-height: 40;
+}
+
+.page-title {
+    -fx-font-size: 28px;
+    -fx-font-weight: bold;
+}
+
+.income-card,
+.expense-card,
+.balance-card,
+.transaction-card {
+
+    -fx-padding: 20;
+    -fx-spacing: 10;
+    -fx-pref-width: 250;
+
+    -fx-background-radius: 10;
+
+    -fx-background-color: white;
+
+    -fx-effect:
+            dropshadow(
+                    gaussian,
+                    rgba(0,0,0,0.15),
+                    10,
+                    0,
+                    0,
+                    2
+            );
+}
+
+.income-card {
+    -fx-border-color: #22C55E;
+}
+
+.expense-card {
+    -fx-border-color: #EF4444;
+}
+
+.balance-card {
+    -fx-border-color: #2563EB;
+}
+
+.transaction-card {
+    -fx-border-color: #F59E0B;
+}

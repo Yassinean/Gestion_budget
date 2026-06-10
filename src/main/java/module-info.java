@@ -1,5 +1,6 @@
 module com.ba.budgetapp {
 
+    requires transitive javafx.graphics;
     requires javafx.controls;
     requires javafx.fxml;
 

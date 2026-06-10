@@ -80,12 +80,12 @@ public class UserDAOImpl extends BaseDAO implements UserDAO {
         return Optional.empty();
     }
 
-    public Optional<User> findByUserName(String nom) {
+    public Optional<User> findByUserName(String username) {
         try (
-                Connection connection = DatabaseConnection.getConnection();
+                Connection connection = getConnection();
                 PreparedStatement ps = connection.prepareStatement(FIND_BY_USERNAME)
         ) {
-            ps.setString(1, nom);
+            ps.setString(1, username);
             ResultSet rs = ps.executeQuery();
             if (rs.next()) {
                 return Optional.of(mapRow(rs));

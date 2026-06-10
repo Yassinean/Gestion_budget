@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<VBox xmlns="http://javafx.com/javafx"
+      xmlns:fx="http://javafx.com/fxml"
+      fx:controller="com.ba.budgetapp.controllers.RegisterController"
+      alignment="CENTER"
+      spacing="15"
+      styleClass="login-container">
+
+    <padding>
+        <Insets top="30" right="30" bottom="30" left="30"/>
+    </padding>
+
+    <Label text="Créer un compte"
+           styleClass="login-title"/>
+
+    <TextField fx:id="usernameField"
+               promptText="Nom d'utilisateur"/>
+
+    <PasswordField fx:id="passwordField"
+                   promptText="Mot de passe"/>
+
+    <PasswordField fx:id="confirmPasswordField"
+                   promptText="Confirmer le mot de passe"/>
+
+    <Button text="Créer le compte"
+            onAction="#register"/>
+
+    <Hyperlink text="Déjà un compte ? Se connecter"
+               onAction="#goToLogin"/>
+
+</VBox>

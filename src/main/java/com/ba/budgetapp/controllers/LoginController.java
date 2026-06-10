@@ -67,4 +67,30 @@ public class LoginController {
             e.printStackTrace();
         }
     }
+
+    @FXML
+    private void goToRegister() {
+
+        try {
+
+            FXMLLoader loader =
+                    new FXMLLoader(
+                            getClass().getResource(
+                                    "/com/ba/budgetapp/Views/Register.fxml"));
+
+            Scene scene =
+                    new Scene(loader.load());
+
+            Stage stage =
+                    (Stage) usernameField
+                            .getScene()
+                            .getWindow();
+
+            stage.setScene(scene);
+
+        } catch (Exception e) {
+
+            e.printStackTrace();
+        }
+    }
 }

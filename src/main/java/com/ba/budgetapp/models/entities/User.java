@@ -12,7 +12,7 @@ public class User {
     private Long userId;
     private String username;
     private String password;
-    private boolean appAccess;
+    private boolean appAccess = true;
 
     public User() {
     }
