@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<VBox xmlns="http://javafx.com/javafx"
+      xmlns:fx="http://javafx.com/fxml"
+      fx:controller="com.ba.budgetapp.controllers.LoginController"
+      alignment="CENTER"
+      spacing="20">
+
+    <padding>
+        <Insets top="40"
+                right="40"
+                bottom="40"
+                left="40"/>
+    </padding>
+    <Label text="Budget Manager" styleClass="login-title"/>
+    <TextField fx:id="usernameField" promptText="Nom d'utilisateur"/>
+    <PasswordField fx:id="passwordField" promptText="Mot de passe"/>
+    <Button text="Connexion" onAction="#login"/>
+    <Hyperlink text="Créer un compte" onAction="#goToRegister"/>
+</VBox>
