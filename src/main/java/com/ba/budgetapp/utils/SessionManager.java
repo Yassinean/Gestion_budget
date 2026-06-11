@@ -1,32 +1,32 @@
 package com.ba.budgetapp.utils;
 
-import com.ba.budgetapp.models.entities.User;
+import com.ba.budgetapp.models.entities.Account;
 
 public final class SessionManager {
 
-    private static User currentUser;
+    private static Account currentAccount;
 
     private SessionManager() {
     }
 
-    public static void login(User user) {
-        currentUser = user;
+    public static void login(Account account) {
+        currentAccount = account;
     }
 
-    public static User getCurrentUser() {
-        return currentUser;
+    public static Account getCurrentAccount() {
+        return currentAccount;
     }
 
-    public static Long getCurrentUserId() {
+    public static Long getCurrentAccountId() {
 
-        if (currentUser == null) {
+        if (currentAccount == null) {
             return null;
         }
 
-        return currentUser.getUserId();
+        return currentAccount.getAccountId();
     }
 
     public static void logout() {
-        currentUser = null;
+        currentAccount = null;
     }
 }

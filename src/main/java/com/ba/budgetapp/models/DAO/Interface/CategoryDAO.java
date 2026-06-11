@@ -9,4 +9,8 @@ public interface CategoryDAO extends CrudDAO<Category, Long> {
     List<Category> findByUserId(Long userId);
 
     Optional<Category> findByIdAndUserId(Long categoryId, Long userId);
+
+    boolean updateForUser(Category category, Long userId);
+
+    boolean deleteForUser(Long categoryId, Long userId);
 }

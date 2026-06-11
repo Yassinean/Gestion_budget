@@ -36,15 +36,15 @@
                     maxWidth="Infinity"
                     onAction="#showDashboard"/>
 
-            <Button fx:id="transactionBtn"
-                    text="Transactions"
-                    maxWidth="Infinity"
-                    onAction="#showTransactions"/>
-
             <Button fx:id="categoryBtn"
                     text="Categories"
                     maxWidth="Infinity"
                     onAction="#showCategories"/>
+            
+            <Button fx:id="transactionBtn"
+                    text="Transactions"
+                    maxWidth="Infinity"
+                    onAction="#showTransactions"/>
 
             <Button fx:id="accountBtn"
                     text="Accounts"

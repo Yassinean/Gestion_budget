@@ -70,6 +70,8 @@ public class TransactionController {
 
         configureTable();
 
+        configureSelection();
+
         loadCategories();
 
         loadAccounts();
@@ -87,15 +89,21 @@ public class TransactionController {
         amountColumn.setCellValueFactory(new PropertyValueFactory<>("amount"));
         categoryColumn.setCellValueFactory(new PropertyValueFactory<>("categoryName"));
     }
+
+    private void configureSelection() {
+        transactionTable.getSelectionModel()
+                .selectedItemProperty()
+                .addListener((observable, oldValue, selected) -> {
+                    if (selected != null) {
+                        fillForm(selected);
+                    }
+                });
+    }
     
     private void loadCategories() {
-        Long userId = SessionManager.getCurrentUserId();
-        categoryCombo.getItems().setAll(categoryService.getCategoriesByUser(userId));
     }
 
     private void loadAccounts() {
-        Long userId = SessionManager.getCurrentUserId();
-        accountCombo.getItems().setAll(accountService.getActiveAccountsByUser(userId));
     }
 
     private void loadTransactionTypes() {
@@ -104,19 +112,12 @@ public class TransactionController {
 
     @FXML
     private void refreshTable() {
-        transactionTable.getItems().setAll(transactionService.findAllByUserId(SessionManager.getCurrentUserId()));
     }
 
     @FXML
     private void addTransaction() {
         try {
-            Transaction transaction = new Transaction();
-            transaction.setAmount(new BigDecimal(amountField.getText()));
-            transaction.setDescription(descriptionField.getText());
-            transaction.setTransactionDate(datePicker.getValue());
-            transaction.setTransactionType(typeCombo.getValue());
-            transaction.setCategoryId(categoryCombo.getValue().getCategoryId());
-            transaction.setAccountId(accountCombo.getValue().getAccountId());
+            Transaction transaction = buildTransactionFromForm();
             transactionService.createTransaction(transaction);
             refreshTable();
             clearForm();
@@ -134,12 +135,13 @@ public class TransactionController {
             return;
         }
         try {
-            selected.setAmount(new BigDecimal(amountField.getText()));
-            selected.setDescription(descriptionField.getText());
-            selected.setTransactionDate(datePicker.getValue());
-            selected.setTransactionType(typeCombo.getValue());
-            selected.setCategoryId(categoryCombo.getValue().getCategoryId());
-            selected.setAccountId(accountCombo.getValue().getAccountId());
+            Transaction formTransaction = buildTransactionFromForm();
+            selected.setAmount(formTransaction.getAmount());
+            selected.setDescription(formTransaction.getDescription());
+            selected.setTransactionDate(formTransaction.getTransactionDate());
+            selected.setTransactionType(formTransaction.getTransactionType());
+            selected.setCategoryId(formTransaction.getCategoryId());
+            selected.setAccountId(formTransaction.getAccountId());
             transactionService.updateTransaction(selected);
             refreshTable();
             clearForm();
@@ -186,5 +188,56 @@ public class TransactionController {
         categoryCombo.getSelectionModel().clearSelection();
         accountCombo.getSelectionModel().clearSelection();
         typeCombo.getSelectionModel().clearSelection();
+    }
+
+    private Transaction buildTransactionFromForm() {
+        Account account = accountCombo.getValue();
+        Category category = categoryCombo.getValue();
+        TransactionType type = typeCombo.getValue();
+        if (account == null) {
+            throw new IllegalArgumentException("Compte obligatoire");
+        }
+        if (category == null) {
+            throw new IllegalArgumentException("Catégorie obligatoire");
+        }
+        if (type == null) {
+            throw new IllegalArgumentException("Type obligatoire");
+        }
+
+        Transaction transaction = new Transaction();
+        transaction.setAmount(new BigDecimal(amountField.getText()));
+        transaction.setDescription(descriptionField.getText());
+        transaction.setTransactionDate(datePicker.getValue());
+        transaction.setTransactionType(type);
+        transaction.setCategoryId(category.getCategoryId());
+        transaction.setAccountId(account.getAccountId());
+        return transaction;
+    }
+
+    private void fillForm(Transaction transaction) {
+        amountField.setText(transaction.getAmount().toPlainString());
+        descriptionField.setText(transaction.getDescription());
+        datePicker.setValue(transaction.getTransactionDate());
+        typeCombo.getSelectionModel().select(transaction.getTransactionType());
+        selectCategory(transaction.getCategoryId());
+        selectAccount(transaction.getAccountId());
+    }
+
+    private void selectCategory(Long categoryId) {
+        categoryCombo.getSelectionModel().clearSelection();
+        categoryCombo.getItems()
+                .stream()
+                .filter(category -> category.getCategoryId().equals(categoryId))
+                .findFirst()
+                .ifPresent(category -> categoryCombo.getSelectionModel().select(category));
+    }
+
+    private void selectAccount(Long accountId) {
+        accountCombo.getSelectionModel().clearSelection();
+        accountCombo.getItems()
+                .stream()
+                .filter(account -> account.getAccountId().equals(accountId))
+                .findFirst()
+                .ifPresent(account -> accountCombo.getSelectionModel().select(account));
     }
 }

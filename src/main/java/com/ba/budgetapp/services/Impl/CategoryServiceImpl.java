@@ -3,7 +3,10 @@ package com.ba.budgetapp.services.Impl;
 import com.ba.budgetapp.models.DAO.Impl.CategoryDAOImpl;
 import com.ba.budgetapp.models.DAO.Interface.CategoryDAO;
 import com.ba.budgetapp.models.entities.Category;
+import com.ba.budgetapp.models.entities.Account;
+import com.ba.budgetapp.services.Interface.AccountService;
 import com.ba.budgetapp.services.Interface.CategoryService;
+import com.ba.budgetapp.utils.SessionManager;
 
 import java.util.List;
 import java.util.Optional;
@@ -11,22 +14,43 @@ import java.util.Optional;
 public class CategoryServiceImpl implements CategoryService {
 
     private final CategoryDAO categoryDAO = new CategoryDAOImpl();
+    private final AccountService accountService = new AccountServiceImpl();
 
     @Override
     public boolean createCategory(Category category) {
         validateCategory(category);
-        return categoryDAO.create(category);
+        requireActiveAccount(category.getUserId());
+        if (!categoryDAO.create(category)) {
+            throw new IllegalStateException("Impossible d'ajouter la catégorie.");
+        }
+        return true;
     }
 
     @Override
     public boolean updateCategory(Category category) {
         validateCategory(category);
-        return categoryDAO.update(category);
+        Long userId = currentUserId();
+        requireActiveAccount(userId);
+        if (categoryDAO.findByIdAndUserId(category.getCategoryId(), userId).isEmpty()) {
+            throw new IllegalStateException("Catégorie inaccessible.");
+        }
+        if (!categoryDAO.updateForUser(category, userId)) {
+            throw new IllegalStateException("Impossible de modifier la catégorie.");
+        }
+        return true;
     }
 
     @Override
     public boolean deleteCategory(Long id) {
-        return categoryDAO.delete(id);
+        Long userId = currentUserId();
+        requireActiveAccount(userId);
+        if (categoryDAO.findByIdAndUserId(id, userId).isEmpty()) {
+            throw new IllegalStateException("Catégorie inaccessible.");
+        }
+        if (!categoryDAO.deleteForUser(id, userId)) {
+            throw new IllegalStateException("Impossible de supprimer la catégorie.");
+        }
+        return true;
     }
 
     @Override
@@ -48,5 +72,17 @@ public class CategoryServiceImpl implements CategoryService {
         if (category == null) {
             throw new IllegalArgumentException("Catégorie invalide");
         }
+    }
+
+    private void requireActiveAccount(Long userId) {
+        
+    }
+
+    private Long currentUserId() {
+        Long userId = null;
+        if (userId == null) {
+            throw new IllegalStateException("Aucun utilisateur connecté.");
+        }
+        return userId;
     }
 }

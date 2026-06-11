@@ -1,8 +1,8 @@
 package com.ba.budgetapp.controllers;
 
-import com.ba.budgetapp.models.entities.User;
-import com.ba.budgetapp.services.Impl.UserServiceImpl;
-import com.ba.budgetapp.services.Interface.UserService;
+import com.ba.budgetapp.models.entities.Account;
+import com.ba.budgetapp.services.Impl.AccountServiceImpl;
+import com.ba.budgetapp.services.Interface.AccountService;
 import com.ba.budgetapp.utils.AlertUtil;
 import com.ba.budgetapp.utils.NavigationUtil;
 import com.ba.budgetapp.utils.SessionManager;
@@ -19,21 +19,27 @@ public class LoginController {
     private TextField usernameField;
 
     @FXML
+    private TextField emailField;
+
+    @FXML
     private PasswordField passwordField;
 
-    private final UserService userService =
-            new UserServiceImpl();
+    private final AccountService accountService =
+            new AccountServiceImpl();
 
     @FXML
     private void login() {
 
         String username = usernameField.getText();
 
+        String email = emailField.getText();
+
         String password = passwordField.getText();
 
-        Optional<User> user =
-                userService.authenticate(
+        Optional<Account> user =
+                accountService.authenticate(
                         username,
+                        email,
                         password);
 
         if (user.isPresent()) {

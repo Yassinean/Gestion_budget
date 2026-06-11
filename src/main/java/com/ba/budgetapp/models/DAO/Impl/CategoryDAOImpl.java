@@ -62,10 +62,25 @@ public class CategoryDAOImpl extends BaseDAO implements CategoryDAO {
             WHERE category_id = ?
             """;
 
+    private static final String UPDATE_FOR_USER =
+            """
+            UPDATE categories
+            SET category_name = ?
+            WHERE category_id = ?
+              AND user_id = ?
+            """;
+
     private static final String DELETE =
             """
             DELETE FROM categories
             WHERE category_id = ?
+            """;
+
+    private static final String DELETE_FOR_USER =
+            """
+            DELETE FROM categories
+            WHERE category_id = ?
+              AND user_id = ?
             """;
 
     @Override
@@ -137,6 +152,22 @@ public class CategoryDAOImpl extends BaseDAO implements CategoryDAO {
     }
 
     @Override
+    public boolean updateForUser(Category category, Long userId) {
+        try (
+                Connection connection = DatabaseConnection.getConnection();
+                PreparedStatement ps = connection.prepareStatement(UPDATE_FOR_USER)
+        ) {
+            ps.setString(1, category.getCategoryName());
+            ps.setLong(2, category.getCategoryId());
+            ps.setLong(3, userId);
+            return ps.executeUpdate() > 0;
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return false;
+    }
+
+    @Override
     public List<Category> findByUserId(Long userId) {
         List<Category> categories = new ArrayList<>();
 
@@ -181,6 +212,21 @@ public class CategoryDAOImpl extends BaseDAO implements CategoryDAO {
                 PreparedStatement ps = connection.prepareStatement(DELETE)
         ) {
             ps.setLong(1, id);
+            return ps.executeUpdate() > 0;
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return false;
+    }
+
+    @Override
+    public boolean deleteForUser(Long categoryId, Long userId) {
+        try (
+                Connection connection = DatabaseConnection.getConnection();
+                PreparedStatement ps = connection.prepareStatement(DELETE_FOR_USER)
+        ) {
+            ps.setLong(1, categoryId);
+            ps.setLong(2, userId);
             return ps.executeUpdate() > 0;
         } catch (SQLException e) {
             e.printStackTrace();

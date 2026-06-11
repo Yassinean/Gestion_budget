@@ -25,18 +25,31 @@ public class TransactionServiceImpl implements TransactionService {
     @Override
     public boolean createTransaction(Transaction transaction) {
         validateTransaction(transaction);
-        return transactionDAO.create(transaction);
+        if (!transactionDAO.create(transaction)) {
+            throw new IllegalStateException("Impossible d'ajouter la transaction.");
+        }
+        return true;
     }
 
     @Override
     public boolean updateTransaction(Transaction transaction) {
+        Transaction existing = getOwnedTransaction(transaction.getTransactionId());
+        requireActiveAccount(existing.getAccountId());
         validateTransaction(transaction);
-        return transactionDAO.updateForUser(transaction, currentUserId());
+        if (!transactionDAO.updateForUser(transaction, currentUserId())) {
+            throw new IllegalStateException("Impossible de modifier la transaction.");
+        }
+        return true;
     }
 
     @Override
     public boolean deleteTransaction(Long id) {
-        return transactionDAO.deleteForUser(id, currentUserId());
+        Transaction existing = getOwnedTransaction(id);
+        requireActiveAccount(existing.getAccountId());
+        if (!transactionDAO.deleteForUser(id, currentUserId())) {
+            throw new IllegalStateException("Impossible de supprimer la transaction.");
+        }
+        return true;
     }
 
     @Override
@@ -46,10 +59,7 @@ public class TransactionServiceImpl implements TransactionService {
 
     @Override
     public Optional<Transaction> findById(Long transactionId) {
-        return transactionDAO.findById(transactionId)
-                .filter(transaction -> accountService
-                        .getAccountByIdForUser(transaction.getAccountId(), currentUserId())
-                        .isPresent());
+        return null;
     }
 
     @Override
@@ -72,14 +82,7 @@ public class TransactionServiceImpl implements TransactionService {
             throw new IllegalArgumentException("Transaction invalide");
         }
         Long userId = currentUserId();
-        if (accountService
-                .getAccountByIdForUser(transaction.getAccountId(), userId)
-                .filter(account -> account.isActive())
-                .isEmpty()) {
-            throw new IllegalStateException(
-                    "Le compte est désactivé ou inaccessible."
-            );
-        }
+        requireActiveAccount(transaction.getAccountId());
         if (categoryService
                 .getCategoryByIdForUser(transaction.getCategoryId(), userId)
                 .isEmpty()) {
@@ -87,11 +90,15 @@ public class TransactionServiceImpl implements TransactionService {
         }
     }
 
+    private Transaction getOwnedTransaction(Long transactionId) {
+            return null;
+    }
+
+    private void requireActiveAccount(Long accountId) {
+        
+    }
+
     private Long currentUserId() {
-        Long userId = SessionManager.getCurrentUserId();
-        if (userId == null) {
-            throw new IllegalStateException("Aucun utilisateur connecté.");
-        }
-        return userId;
+        return null;
     }
 }

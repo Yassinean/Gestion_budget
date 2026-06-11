@@ -21,6 +21,9 @@
     <TextField fx:id="usernameField"
                promptText="Nom d'utilisateur"/>
 
+    <TextField fx:id="emailField"
+               promptText="Adresse e-mail"/>
+
     <PasswordField fx:id="passwordField"
                    promptText="Mot de passe"/>
 
