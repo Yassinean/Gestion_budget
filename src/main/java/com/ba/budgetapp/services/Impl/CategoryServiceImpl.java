@@ -3,10 +3,8 @@ package com.ba.budgetapp.services.Impl;
 import com.ba.budgetapp.models.DAO.Impl.CategoryDAOImpl;
 import com.ba.budgetapp.models.DAO.Interface.CategoryDAO;
 import com.ba.budgetapp.models.entities.Category;
-import com.ba.budgetapp.models.entities.Account;
-import com.ba.budgetapp.services.Interface.AccountService;
+import com.ba.budgetapp.models.entities.TransactionType;
 import com.ba.budgetapp.services.Interface.CategoryService;
-import com.ba.budgetapp.utils.SessionManager;
 
 import java.util.List;
 import java.util.Optional;
@@ -14,58 +12,42 @@ import java.util.Optional;
 public class CategoryServiceImpl implements CategoryService {
 
     private final CategoryDAO categoryDAO = new CategoryDAOImpl();
-    private final AccountService accountService = new AccountServiceImpl();
 
     @Override
-    public boolean createCategory(Category category) {
+    public boolean create(Category category) {
         validateCategory(category);
-        requireActiveAccount(category.getUserId());
-        if (!categoryDAO.create(category)) {
-            throw new IllegalStateException("Impossible d'ajouter la catégorie.");
-        }
-        return true;
+        return categoryDAO.create(category);
     }
 
     @Override
-    public boolean updateCategory(Category category) {
+    public boolean update(Category category) {
         validateCategory(category);
-        Long userId = currentUserId();
-        requireActiveAccount(userId);
-        if (categoryDAO.findByIdAndUserId(category.getCategoryId(), userId).isEmpty()) {
-            throw new IllegalStateException("Catégorie inaccessible.");
-        }
-        if (!categoryDAO.updateForUser(category, userId)) {
-            throw new IllegalStateException("Impossible de modifier la catégorie.");
-        }
-        return true;
+        return categoryDAO.update(category);
     }
 
     @Override
-    public boolean deleteCategory(Long id) {
-        Long userId = currentUserId();
-        requireActiveAccount(userId);
-        if (categoryDAO.findByIdAndUserId(id, userId).isEmpty()) {
-            throw new IllegalStateException("Catégorie inaccessible.");
-        }
-        if (!categoryDAO.deleteForUser(id, userId)) {
-            throw new IllegalStateException("Impossible de supprimer la catégorie.");
-        }
-        return true;
+    public boolean delete(Long categoryId) {
+        return categoryDAO.delete(categoryId);
     }
 
     @Override
-    public List<Category> getAllCategories() {
-        return categoryDAO.findAll();
+    public Optional<Category> findById(Long id) {
+        return categoryDAO.findById(id);
     }
 
     @Override
-    public List<Category> getCategoriesByUser(Long userId) {
-        return categoryDAO.findByUserId(userId);
+    public List<Category> findByBudgetId(Long budgetId) {
+        return categoryDAO.findByBudgetId(budgetId);
     }
 
     @Override
-    public Optional<Category> getCategoryByIdForUser(Long categoryId, Long userId) {
-        return categoryDAO.findByIdAndUserId(categoryId, userId);
+    public List<Category> findByType(Long budgetId, TransactionType type) {
+        return categoryDAO.findByType(budgetId,type);
+    }
+
+    @Override
+    public Optional<Category> findByTitle(Long budgetId, String categoryName){
+        return categoryDAO.findByTitle(budgetId, categoryName);
     }
 
     private void validateCategory(Category category) {
@@ -74,15 +56,4 @@ public class CategoryServiceImpl implements CategoryService {
         }
     }
 
-    private void requireActiveAccount(Long userId) {
-        
-    }
-
-    private Long currentUserId() {
-        Long userId = null;
-        if (userId == null) {
-            throw new IllegalStateException("Aucun utilisateur connecté.");
-        }
-        return userId;
-    }
 }

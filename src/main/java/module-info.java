@@ -15,5 +15,6 @@ module com.ba.budgetapp {
     exports com.ba.budgetapp;
     exports com.ba.budgetapp.controllers;
     exports com.ba.budgetapp.models.entities;
+    exports com.ba.budgetapp.services.Interface;
     opens com.ba.budgetapp.models.entities to javafx.base;
 }

@@ -1,6 +1,7 @@
 package com.ba.budgetapp.models.DAO.Interface;
 
 import com.ba.budgetapp.models.entities.Transaction;
+import com.ba.budgetapp.models.entities.TransactionView;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -9,17 +10,29 @@ import java.util.Map;
 
 public interface TransactionDAO extends CrudDAO<Transaction, Long> {
 
-    BigDecimal getTotalIncome(Long userId);
-    BigDecimal getTotalExpense(Long userId);
-    BigDecimal getCurrentBalance(Long userId);
-    long countTransactions(Long userId);
-    List<Transaction> findByCategory(Long categoryId, Long userId);
-    List<Transaction> findByDateRange(LocalDate start, LocalDate end, Long userId);
-    List<Transaction> search(String keyword, Long userId);
-    Map<String, Double> getExpensesByCategory(Long userId);
-    Map<String, Double> getMonthlyIncome(Long userId);
-    Map<String, Double> getMonthlyExpense(Long userId);
-    List<Transaction> findAllByUser(Long userId);
-    boolean updateForUser(Transaction transaction, Long userId);
-    boolean deleteForUser(Long transactionId, Long userId);
+    List<Transaction> findByBudgetId(Long budgetId);
+
+    List<Transaction> findByCategory(Long categoryId);
+
+    List<Transaction> findByDateRange(Long budgetId, LocalDate start, LocalDate end);
+
+    List<Transaction> search(Long budgetId, String keyword);
+
+    List<TransactionView> searchView(Long budgetId, String keyword);
+
+    List<TransactionView> findAllView(Long budgetId);
+
+    BigDecimal getTotalIncome(Long budgetId);
+
+    BigDecimal getTotalExpense(Long budgetId);
+
+    BigDecimal getCurrentBalance(Long budgetId);
+
+    long countTransactions(Long budgetId);
+
+    Map<String, Double> getExpensesByCategory(Long budgetId);
+
+    Map<String, Double> getMonthlyIncome(Long budgetId);
+
+    Map<String, Double> getMonthlyExpense(Long budgetId);
 }

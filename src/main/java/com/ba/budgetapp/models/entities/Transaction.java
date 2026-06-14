@@ -1,41 +1,82 @@
 package com.ba.budgetapp.models.entities;
 
-import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.Objects;
 
 /**
  * Représente une transaction financière.
  *
- * @author Etudiant
+ * @author Yhanach
  */
 public class Transaction {
 
     private Long transactionId;
 
-    private BigDecimal amount;
+    private Long budgetId;
+
+    private Long categoryId;
+
+    private TransactionType transactionType;
+
+    private Long amount;
 
     private String description;
 
     private LocalDate transactionDate;
 
-    private TransactionType transactionType;
+    private LocalDateTime createdAt;
 
-    private Long accountId;
+    private LocalDateTime updatedAt;
 
-    private Long categoryId;
+    public LocalDateTime getCreatedAt() {
+        return createdAt;
+    }
 
-    private String categoryName;
+    public void setCreatedAt(LocalDateTime createdAt) {
+        this.createdAt = createdAt;
+    }
 
+    public LocalDateTime getUpdatedAt() {
+        return updatedAt;
+    }
+
+    public void setUpdatedAt(LocalDateTime updatedAt) {
+        this.updatedAt = updatedAt;
+    }
+
+    public void validate() {
+
+        if (budgetId == null) {
+            throw new IllegalArgumentException("Budget obligatoire.");
+        }
+
+        if (categoryId == null) {
+            throw new IllegalArgumentException("Catégorie obligatoire.");
+        }
+
+        if (transactionType == null) {
+            throw new IllegalArgumentException("Type obligatoire.");
+        }
+
+        if (amount == null || amount <= 0) {
+            throw new IllegalArgumentException("Montant invalide.");
+        }
+
+        if (transactionDate == null) {
+            throw new IllegalArgumentException("Date obligatoire.");
+        }
+    }
+    
     public Transaction() {
     }
 
     public Transaction(Long transactionId,
-                       BigDecimal amount,
+                       Long amount,
                        String description,
                        LocalDate transactionDate,
                        TransactionType transactionType,
-                       Long accountId,
+                       Long budgetId,
                        Long categoryId) {
 
         this.transactionId = transactionId;
@@ -43,8 +84,8 @@ public class Transaction {
         this.description = description;
         this.transactionDate = transactionDate;
         this.transactionType = transactionType;
-        this.accountId = accountId;
         this.categoryId = categoryId;
+        this.budgetId = budgetId;
     }
 
     public Long getTransactionId() {
@@ -55,17 +96,13 @@ public class Transaction {
         this.transactionId = transactionId;
     }
 
-    public BigDecimal getAmount() {
+    public Long getAmount() {
         return amount;
     }
 
-    public void setAmount(BigDecimal amount) {
-
-        if (amount == null ||
-                amount.compareTo(BigDecimal.ZERO) <= 0) {
-
-            throw new IllegalArgumentException(
-                    "Montant invalide");
+    public void setAmount(Long amount) {
+        if (amount == null || amount <= 0) {
+            throw new IllegalArgumentException("Montant invalide");
         }
 
         this.amount = amount;
@@ -116,18 +153,18 @@ public class Transaction {
         this.transactionType = transactionType;
     }
 
-    public Long getAccountId() {
-        return accountId;
+    public Long getBudgetId() {
+        return budgetId;
     }
 
-    public void setAccountId(Long accountId) {
+    public void setBudgetId(Long budgetId) {
 
-        if (accountId == null || accountId <= 0) {
+        if (budgetId == null || budgetId <= 0) {
             throw new IllegalArgumentException(
-                    "Compte invalide");
+                    "Budget invalide");
         }
 
-        this.accountId = accountId;
+        this.budgetId = budgetId;
     }
 
     public Long getCategoryId() {
@@ -144,13 +181,6 @@ public class Transaction {
         this.categoryId = categoryId;
     }
 
-    public String getCategoryName(){
-        return categoryName;
-    }
-
-    public void setCategoryName(String categoryName) {
-        this.categoryName = categoryName;
-    }
 
     @Override
     public boolean equals(Object o) {

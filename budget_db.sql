@@ -60,10 +60,6 @@ CREATE TABLE categories (
 
     title VARCHAR(100) NOT NULL,
 
-    icon VARCHAR(255),
-
-    tx_type ENUM('INCOME','EXPENSE') NOT NULL,
-
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
 
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
@@ -72,14 +68,16 @@ CREATE TABLE categories (
     CONSTRAINT fk_category_budget
         FOREIGN KEY (budget_id)
         REFERENCES budgets(budget_id)
-        ON DELETE CASCADE
+        ON DELETE CASCADE,
+    
+    UNIQUE (budget_id, title)
 );
 
 -- =====================================================
 -- TRANSACTIONS
 -- =====================================================
 
-CREATE TABLE transactions (
+CREATE TABLE transactions(
 
     transaction_id BIGINT AUTO_INCREMENT PRIMARY KEY,
 
@@ -87,9 +85,13 @@ CREATE TABLE transactions (
 
     category_id BIGINT NOT NULL,
 
+    transaction_type ENUM('INCOME','EXPENSE') NOT NULL,
+
     amount DECIMAL(12,2) NOT NULL,
 
-    note VARCHAR(255),
+    description VARCHAR(255),
+
+    transaction_date DATE NOT NULL,
 
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
 

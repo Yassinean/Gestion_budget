@@ -6,40 +6,41 @@ import com.ba.budgetapp.models.entities.Budget;
 import com.ba.budgetapp.services.Interface.BudgetService;
 
 import java.util.List;
+import java.util.Optional;
 
 public class BudgetServiceImpl implements BudgetService {
 
-    private final BudgetDAO budgetDAO;
-
-    public BudgetServiceImpl() {
-        this.budgetDAO = new BudgetDAOImpl();
-    }
+    private final BudgetDAO budgetDAO = new BudgetDAOImpl();
 
     @Override
-    public boolean createBudget(Budget budget) {
-        validateBudget(budget);
+    public boolean create(Budget budget) {
+        budget.validate();
         return budgetDAO.create(budget);
     }
 
     @Override
-    public boolean updateBudget(Budget budget) {
-        validateBudget(budget);
+    public boolean update(Budget budget) {
+        budget.validate();
         return budgetDAO.update(budget);
     }
 
     @Override
-    public boolean deleteBudget(Long id) {
+    public boolean delete(Long id) {
         return budgetDAO.delete(id);
     }
 
     @Override
-    public List<Budget> findByUser(Long userId) {
-        return budgetDAO.findByUser(userId);
+    public Optional<Budget> findById(Long id) {
+        return budgetDAO.findById(id);
     }
 
-    private void validateBudget(Budget Budget) {
-        if (Budget == null) {
-            throw new IllegalArgumentException("Budget invalide");
-        }
+    @Override
+    public List<Budget> findByOwnerId(Long ownerId) {
+        return budgetDAO.findByOwnerId(ownerId);
+    }
+
+    @Override
+    public Optional<Budget> findDefaultBudget(Long ownerId) {
+        return budgetDAO.findDefaultBudget(ownerId);
     }
 }

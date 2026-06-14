@@ -30,12 +30,12 @@ public class CategoriesController {
     @FXML
     public void initialize() {
         idColumn.setCellValueFactory(new PropertyValueFactory<>("categoryId"));
-        nameColumn.setCellValueFactory(new PropertyValueFactory<>("categoryName"));
+        nameColumn.setCellValueFactory(new PropertyValueFactory<>("title"));
         categoryTable.getSelectionModel()
                 .selectedItemProperty()
                 .addListener((observable, oldValue, selected) -> {
                     if (selected != null) {
-                        categoryNameField.setText(selected.getCategoryName());
+                        categoryNameField.setText(selected.getTitle());
                     }
                 });
         refreshTable();
@@ -43,11 +43,29 @@ public class CategoriesController {
 
     @FXML
     private void addCategory() {
+        String name = categoryNameField.getText().trim();
+        if (name.isBlank()) {
+            AlertUtil.showError("Le nom de la catégorie ne peut pas être vide.");
+            return;
+        }
+
+        Long budgetId = SessionManager.getCurrentBudgetId();
+        if (budgetId == null) {
+            AlertUtil.showError("Aucun budget actif n'est sélectionné.");
+            return;
+        }
+
         try {
+            if (categoryService.findByTitle(budgetId, name).isPresent()) {
+                AlertUtil.showError("Cette catégorie existe déjà.");
+                return;
+            }
+
             Category category = new Category();
-            category.setCategoryName(categoryNameField.getText());
-            category.setUserId(currentUserId());
-            categoryService.createCategory(category);
+            category.setTitle(name);
+            category.setBudgetId(budgetId);
+
+            categoryService.create(category);
             refreshTable();
             clearForm();
         } catch (Exception e) {
@@ -63,8 +81,8 @@ public class CategoriesController {
             return;
         }
         try {
-            selected.setCategoryName(categoryNameField.getText());
-            categoryService.updateCategory(selected);
+            selected.setTitle(categoryNameField.getText());
+            categoryService.update(selected);
             refreshTable();
             clearForm();
         } catch (Exception e) {
@@ -83,7 +101,7 @@ public class CategoriesController {
             return;
         }
         try {
-            categoryService.deleteCategory(selected.getCategoryId());
+            categoryService.delete(selected.getCategoryId());
             refreshTable();
             clearForm();
         } catch (Exception e) {
@@ -93,7 +111,7 @@ public class CategoriesController {
 
     @FXML
     private void refreshTable() {
-        categoryTable.getItems().setAll(categoryService.getCategoriesByUser(currentUserId()));
+        categoryTable.getItems().setAll(categoryService.findByBudgetId(SessionManager.getCurrentBudgetId()));
     }
 
     private void clearForm() {
@@ -101,12 +119,4 @@ public class CategoriesController {
         categoryTable.getSelectionModel().clearSelection();
     }
 
-    private Long currentUserId() {
-        Long userId = 1L;
-        // Long userId = SessionManager.getCurrentUserId();
-        // if (userId == null) {
-        //     throw new IllegalStateException("Aucun utilisateur connecté.");
-        // }
-        return userId;
-    }
 }

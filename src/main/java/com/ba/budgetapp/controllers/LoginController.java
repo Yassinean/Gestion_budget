@@ -1,8 +1,11 @@
 package com.ba.budgetapp.controllers;
 
 import com.ba.budgetapp.models.entities.Account;
+import com.ba.budgetapp.models.entities.Budget;
 import com.ba.budgetapp.services.Impl.AccountServiceImpl;
+import com.ba.budgetapp.services.Impl.BudgetServiceImpl;
 import com.ba.budgetapp.services.Interface.AccountService;
+import com.ba.budgetapp.services.Interface.BudgetService;
 import com.ba.budgetapp.utils.AlertUtil;
 import com.ba.budgetapp.utils.NavigationUtil;
 import com.ba.budgetapp.utils.SessionManager;
@@ -24,39 +27,53 @@ public class LoginController {
     @FXML
     private PasswordField passwordField;
 
-    private final AccountService accountService =
-            new AccountServiceImpl();
+    private final AccountService accountService = new AccountServiceImpl();
+    private final BudgetService budgetService = new BudgetServiceImpl();
 
     @FXML
     private void login() {
 
-        String username = usernameField.getText();
-
-        String email = emailField.getText();
-
+        String username = usernameField.getText().trim();
+        String email = emailField.getText().trim();
         String password = passwordField.getText();
 
-        Optional<Account> user =
-                accountService.authenticate(
-                        username,
-                        email,
-                        password);
+        if (username.isEmpty() || email.isEmpty() || password.isEmpty()) {
+            AlertUtil.showError("Veuillez remplir tous les champs.");
+            return;
+        }
 
-        if (user.isPresent()) {
-            SessionManager.login(user.get());
-            openMainLayout();
-        } else {
-            AlertUtil.showError("Nom d'utilisateur ou mot de passe incorrect");
+        try {
+
+            Optional<Account> accountOpt = accountService.authenticate(username, email, password);
+
+            if (accountOpt.isPresent()) {
+                Account account = accountOpt.get();
+                Budget budget = budgetService.findDefaultBudget(account.getAccountId()).orElse(null);
+
+                SessionManager.startSession(account, budget);
+                openMainLayout();
+
+            } else {
+                AlertUtil.showError("Nom d'utilisateur, email ou mot de passe incorrect.");
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            AlertUtil.showError("Une erreur est survenue lors de la connexion.");
         }
     }
 
     private void openMainLayout() {
-
         try {
             Stage stage = (Stage) usernameField
-                            .getScene()
-                            .getWindow();
-            NavigationUtil.setScene(stage, "/com/ba/budgetapp/Views/MainLayout.fxml");
+                    .getScene()
+                    .getWindow();
+
+            NavigationUtil.setScene(
+                    stage,
+                    "/com/ba/budgetapp/Views/MainLayout.fxml"
+            );
+
         } catch (Exception e) {
             e.printStackTrace();
             AlertUtil.showError("Impossible d'ouvrir l'application.");
@@ -67,15 +84,15 @@ public class LoginController {
     private void goToRegister() {
 
         try {
-            Stage stage =
-                    (Stage) usernameField
-                            .getScene()
-                            .getWindow();
-
-            NavigationUtil.setScene(stage, "/com/ba/budgetapp/Views/Register.fxml");
+            Stage stage = (Stage) usernameField
+                    .getScene()
+                    .getWindow();
+            NavigationUtil.setScene(
+                    stage,
+                    "/com/ba/budgetapp/Views/Register.fxml"
+            );
 
         } catch (Exception e) {
-
             e.printStackTrace();
             AlertUtil.showError("Impossible d'ouvrir l'inscription.");
         }

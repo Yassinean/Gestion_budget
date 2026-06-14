@@ -1,52 +1,116 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
+<?import javafx.geometry.Insets?>
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 
-<BorderPane xmlns="http://javafx.com/javafx"
+<BorderPane xmlns="http://javafx.com/javafx/21"
             xmlns:fx="http://javafx.com/fxml"
-            fx:controller="com.ba.budgetapp.controllers.CategoriesController">
+            fx:controller="com.ba.budgetapp.controllers.CategoriesController"
+            stylesheets="@../css/style.css">
 
     <top>
-        <VBox spacing="15" styleClass="content-container">
+
+        <VBox spacing="8" styleClass="page-header">
+
+            <padding>
+                <Insets top="20" right="25" bottom="20" left="25"/>
+            </padding>
+
             <Label text="Gestion des Catégories"
                    styleClass="page-title"/>
 
-            <GridPane hgap="10" vgap="10">
-                <Label text="Nom :"
-                       GridPane.rowIndex="0"
-                       GridPane.columnIndex="0"/>
-                <TextField fx:id="categoryNameField"
-                           promptText="Nom de catégorie"
-                           prefWidth="260"
-                           GridPane.rowIndex="0"
-                           GridPane.columnIndex="1"/>
-            </GridPane>
+            <Label text="Créer, modifier et supprimer vos catégories."
+                   styleClass="page-subtitle"/>
 
-            <HBox spacing="10">
-                <Button text="Ajouter"
-                        onAction="#addCategory"/>
-                <Button text="Modifier"
-                        onAction="#updateCategory"/>
-                <Button text="Supprimer"
-                        onAction="#deleteCategory"/>
-                <Button text="Actualiser"
-                        onAction="#refreshTable"/>
-            </HBox>
         </VBox>
+
     </top>
 
     <center>
-        <TableView fx:id="categoryTable">
-            <columns>
-                <TableColumn fx:id="idColumn"
-                             text="ID"
-                             prefWidth="120"/>
-                <TableColumn fx:id="nameColumn"
-                             text="Nom"
-                             prefWidth="360"/>
-            </columns>
-        </TableView>
+
+        <HBox spacing="25">
+
+            <padding>
+                <Insets top="20" right="25" bottom="20" left="25"/>
+            </padding>
+
+            <!-- FORMULAIRE -->
+
+            <VBox spacing="15"
+                  prefWidth="320"
+                  styleClass="card">
+
+                <Label text="Nouvelle catégorie"
+                       styleClass="section-title"/>
+
+                <TextField fx:id="categoryNameField"
+                           promptText="Nom de la catégorie"/>
+
+                <HBox spacing="10">
+
+                    <Button text="Ajouter"
+                            onAction="#addCategory"
+                            styleClass="btn-success"
+                            HBox.hgrow="ALWAYS"
+                            maxWidth="Infinity"/>
+
+                    <Button text="Modifier"
+                            onAction="#updateCategory"
+                            styleClass="btn-primary"
+                            HBox.hgrow="ALWAYS"
+                            maxWidth="Infinity"/>
+
+                </HBox>
+
+                <Button text="Supprimer"
+                        onAction="#deleteCategory"
+                        maxWidth="Infinity"
+                        styleClass="btn-danger"/>
+
+            </VBox>
+
+            <!-- TABLE -->
+
+            <VBox VBox.vgrow="ALWAYS"
+                  HBox.hgrow="ALWAYS"
+                  spacing="10"
+                  styleClass="card">
+
+                <HBox spacing="10">
+
+                    <Label text="Liste des catégories"
+                           styleClass="section-title"/>
+
+                    <Region HBox.hgrow="ALWAYS"/>
+
+                    <Button text="Actualiser"
+                            onAction="#refreshTable"
+                            styleClass="btn-secondary"/>
+
+                </HBox>
+
+                <TableView fx:id="categoryTable"
+                           VBox.vgrow="ALWAYS">
+
+                    <columns>
+
+                        <TableColumn fx:id="idColumn"
+                                     text="ID"
+                                     prefWidth="90"/>
+
+                        <TableColumn fx:id="nameColumn"
+                                     text="Nom de la catégorie"
+                                     prefWidth="350"/>
+
+                    </columns>
+
+                </TableView>
+
+            </VBox>
+
+        </HBox>
+
     </center>
 
 </BorderPane>
