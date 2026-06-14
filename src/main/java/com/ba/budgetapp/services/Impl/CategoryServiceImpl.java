@@ -3,6 +3,7 @@ package com.ba.budgetapp.services.Impl;
 import com.ba.budgetapp.models.DAO.Impl.CategoryDAOImpl;
 import com.ba.budgetapp.models.DAO.Interface.CategoryDAO;
 import com.ba.budgetapp.models.entities.Category;
+import com.ba.budgetapp.models.entities.TransactionType;
 import com.ba.budgetapp.services.Interface.CategoryService;
 
 import java.util.List;
@@ -13,35 +14,40 @@ public class CategoryServiceImpl implements CategoryService {
     private final CategoryDAO categoryDAO = new CategoryDAOImpl();
 
     @Override
-    public boolean createCategory(Category category) {
+    public boolean create(Category category) {
         validateCategory(category);
         return categoryDAO.create(category);
     }
 
     @Override
-    public boolean updateCategory(Category category) {
+    public boolean update(Category category) {
         validateCategory(category);
         return categoryDAO.update(category);
     }
 
     @Override
-    public boolean deleteCategory(Long id) {
-        return categoryDAO.delete(id);
+    public boolean delete(Long categoryId) {
+        return categoryDAO.delete(categoryId);
     }
 
     @Override
-    public List<Category> getAllCategories() {
-        return categoryDAO.findAll();
+    public Optional<Category> findById(Long id) {
+        return categoryDAO.findById(id);
     }
 
     @Override
-    public List<Category> getCategoriesByUser(Long userId) {
-        return categoryDAO.findByUserId(userId);
+    public List<Category> findByBudgetId(Long budgetId) {
+        return categoryDAO.findByBudgetId(budgetId);
     }
 
     @Override
-    public Optional<Category> getCategoryByIdForUser(Long categoryId, Long userId) {
-        return categoryDAO.findByIdAndUserId(categoryId, userId);
+    public List<Category> findByType(Long budgetId, TransactionType type) {
+        return categoryDAO.findByType(budgetId,type);
+    }
+
+    @Override
+    public Optional<Category> findByTitle(Long budgetId, String categoryName){
+        return categoryDAO.findByTitle(budgetId, categoryName);
     }
 
     private void validateCategory(Category category) {
@@ -49,4 +55,5 @@ public class CategoryServiceImpl implements CategoryService {
             throw new IllegalArgumentException("Catégorie invalide");
         }
     }
+
 }

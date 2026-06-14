@@ -1,8 +1,8 @@
 package com.ba.budgetapp.controllers;
 
-import com.ba.budgetapp.models.entities.User;
-import com.ba.budgetapp.services.Impl.UserServiceImpl;
-import com.ba.budgetapp.services.Interface.UserService;
+import com.ba.budgetapp.models.entities.Account;
+import com.ba.budgetapp.services.Impl.AccountServiceImpl;
+import com.ba.budgetapp.services.Interface.AccountService;
 import com.ba.budgetapp.utils.AlertUtil;
 import com.ba.budgetapp.utils.NavigationUtil;
 import javafx.fxml.FXML;
@@ -17,22 +17,27 @@ public class RegisterController {
     private TextField usernameField;
 
     @FXML
+    private TextField emailField;
+
+    @FXML
     private PasswordField passwordField;
 
     @FXML
     private PasswordField confirmPasswordField;
 
-    private final UserService userService =
-            new UserServiceImpl();
+    private final AccountService accountService =
+            new AccountServiceImpl();
 
     @FXML
     private void register() {
 
         String username = usernameField.getText().trim();
+        String email = emailField.getText().trim();
         String password = passwordField.getText();
         String confirm = confirmPasswordField.getText();
 
         if (username.isBlank()
+                || email.isBlank()
                 || password.isBlank()
                 || confirm.isBlank()) {
 
@@ -44,11 +49,12 @@ public class RegisterController {
             AlertUtil.showError("Les mots de passe ne correspondent pas.");
             return;
         }
-        User user = new User();
-        user.setUsername(username);
-        user.setPassword(password);
+        Account account = new Account();
+        account.setUsername(username);
+        account.setEmail(email);
+        account.setPassword(password);
         try {
-            boolean created = userService.register(user);
+            boolean created = accountService.register(account);
             if (created) {
                 AlertUtil.showInfo("Compte créé avec succès.");
                 goToLogin();

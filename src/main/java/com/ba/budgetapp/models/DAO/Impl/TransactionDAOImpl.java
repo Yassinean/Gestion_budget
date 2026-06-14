@@ -4,6 +4,7 @@ import com.ba.budgetapp.models.DAO.BaseDAO;
 import com.ba.budgetapp.models.DAO.Interface.TransactionDAO;
 import com.ba.budgetapp.models.entities.Transaction;
 import com.ba.budgetapp.models.entities.TransactionType;
+import com.ba.budgetapp.models.entities.TransactionView;
 
 import java.math.BigDecimal;
 import java.sql.*;
@@ -11,142 +12,135 @@ import java.sql.Date;
 import java.time.LocalDate;
 import java.util.*;
 
-public class TransactionDAOImpl
-        extends BaseDAO
-        implements TransactionDAO {
+public class TransactionDAOImpl extends BaseDAO implements TransactionDAO {
+    
+    private static final String INSERT = "INSERT INTO transactions (budget_id, category_id, transaction_type, amount, description, transaction_date) VALUES (?,?,?,?,?,?)";
 
-    private static final String INSERT = """
-            INSERT INTO transactions(
-                amount,
-                description,
-                transaction_date,
-                transaction_type,
-                account_id,
-                category_id
-            )
-            VALUES(?,?,?,?,?,?)
-            """;
+    private static final String UPDATE = "UPDATE transactions SET category_id=?, transaction_type=?, amount=?, description=?, transaction_date=? WHERE transaction_id=?";
 
-    private static final String FIND_BY_ID = """
-            SELECT
-                t.*,
-                c.category_name
-            FROM transactions t
-            JOIN categories c
-                ON c.category_id = t.category_id
-            WHERE t.transaction_id = ?
-            """;
+    private static final String DELETE = "DELETE FROM transactions WHERE transaction_id = ?";
 
-    private static final String FIND_BY_USER = """
-            SELECT
-                t.*,
-                c.category_name
-            FROM transactions t
-            JOIN categories c
-                ON c.category_id = t.category_id
-            JOIN accounts a
-                ON t.account_id = a.account_id
-            WHERE a.user_id = ?
-            ORDER BY t.transaction_date DESC
-            """;
+    private static final String FIND_BY_ID = "SELECT * FROM transactions WHERE transaction_id = ?";
 
-    private static final String UPDATE = """
-            UPDATE transactions
-            SET amount = ?,
-                description = ?,
-                transaction_date = ?,
-                transaction_type = ?,
-                account_id = ?,
-                category_id = ?
-            WHERE transaction_id = ?
-            """;
+    private static final String FIND_ALL = "SELECT * FROM transactions ORDER BY transaction_date DESC, transaction_id DESC";
+    
+    private static final String FIND_BY_BUDGET_ID = "SELECT * FROM transactions WHERE budget_id = ? ORDER BY transaction_date DESC";
 
-    private static final String UPDATE_FOR_USER = """
-            UPDATE transactions t
-            JOIN accounts current_account
-                ON current_account.account_id = t.account_id
-            JOIN accounts new_account
-                ON new_account.account_id = ?
-            JOIN categories c
-                ON c.category_id = ?
-            SET t.amount = ?,
-                t.description = ?,
-                t.transaction_date = ?,
-                t.transaction_type = ?,
-                t.account_id = ?,
-                t.category_id = ?
-            WHERE t.transaction_id = ?
-              AND current_account.user_id = ?
-              AND new_account.user_id = ?
-              AND new_account.active = TRUE
-              AND c.user_id = ?
-            """;
+    private static final String FIND_BY_DATE_RANGE = "SELECT * FROM transactions WHERE budget_id = ? AND transaction_date BETWEEN ? AND ? ORDER BY transaction_date DESC";
 
-    private static final String DELETE = """
-            DELETE FROM transactions
-            WHERE transaction_id = ?
-            """;
+    private static final String SEARCH = "SELECT * FROM transactions WHERE budget_id = ? AND description LIKE ? ORDER BY transaction_date DESC";
 
-    private static final String DELETE_FOR_USER = """
-            DELETE t
-            FROM transactions t
-            JOIN accounts a
-                ON a.account_id = t.account_id
-            WHERE t.transaction_id = ?
-              AND a.user_id = ?
-              AND a.active = TRUE
-            """;
+    private static final String SEARCH_VIEW = """
+        SELECT t.transaction_id, c.title AS category, t.transaction_type, t.amount, t.description, t.transaction_date
+        FROM transactions t
+        JOIN categories c ON t.category_id = c.category_id
+        WHERE t.budget_id = ?
+          AND (
+              LOWER(t.description) LIKE ?
+              OR LOWER(c.title) LIKE ?
+              OR LOWER(t.transaction_type) LIKE ?
+          )
+        ORDER BY t.transaction_date DESC, t.transaction_id DESC
+        """;
+
+    private static final String FIND_ALL_VIEW = """
+        SELECT t.transaction_id, c.title AS category, t.transaction_type, t.amount, t.description, t.transaction_date
+        FROM transactions t
+        JOIN categories c ON t.category_id = c.category_id
+        WHERE t.budget_id = ?
+        ORDER BY
+        transaction_date DESC,
+        transaction_id DESC
+        """;
+
+    private static final String GET_TOTAL_INCOME = "SELECT COALESCE(SUM(amount), 0) FROM transactions WHERE budget_id = ? AND transaction_type = 'INCOME'";
+
+    private static final String GET_TOTAL_EXPENSE = "SELECT COALESCE(SUM(amount), 0) FROM transactions WHERE budget_id = ? AND transaction_type = 'EXPENSE'";
+
+    private static final String GET_CURRENT_BALANCE = """
+        SELECT
+            COALESCE(SUM(CASE WHEN transaction_type = 'INCOME' THEN amount ELSE 0 END), 0) -
+            COALESCE(SUM(CASE WHEN transaction_type = 'EXPENSE' THEN amount ELSE 0 END), 0) AS balance
+        FROM transactions
+        WHERE budget_id = ?
+        """;
+
+    private static final String COUNT_TRANSACTIONS = "SELECT COUNT(*) FROM transactions WHERE budget_id = ?";
+
+    private static final String GET_EXPENSES_BY_CATEGORY = """
+        SELECT c.title AS category, COALESCE(SUM(t.amount), 0) AS total
+        FROM transactions t
+        JOIN categories c ON t.category_id = c.category_id
+        WHERE t.budget_id = ? AND t.transaction_type = 'EXPENSE'
+        GROUP BY c.title
+        ORDER BY total DESC
+        """;
+
+    private static final String GET_MONTHLY_INCOME = """
+        SELECT TO_CHAR(transaction_date, 'YYYY-MM') AS month, COALESCE(SUM(amount), 0) AS total
+        FROM transactions
+        WHERE budget_id = ? AND transaction_type = 'INCOME'
+        GROUP BY month
+        ORDER BY month
+        """;
+
+    private static final String GET_MONTHLY_EXPENSE = """
+        SELECT TO_CHAR(transaction_date, 'YYYY-MM') AS month, COALESCE(SUM(amount), 0) AS total
+        FROM transactions
+        WHERE budget_id = ? AND transaction_type = 'EXPENSE'
+        GROUP BY month
+        ORDER BY month
+        """;
 
     @Override
     public boolean create(Transaction transaction) {
-
         try (
                 Connection connection = getConnection();
-                PreparedStatement ps =
-                        connection.prepareStatement(INSERT)
-        ) {
-            ps.setBigDecimal(1, transaction.getAmount());
+                PreparedStatement ps = connection.prepareStatement(INSERT, Statement.RETURN_GENERATED_KEYS)
+            ) {
+                ps.setLong(1, transaction.getBudgetId());
+                ps.setLong(2, transaction.getCategoryId());
+                ps.setString(3, transaction.getTransactionType().name());
+                ps.setLong(4, transaction.getAmount());
+                ps.setString(5, transaction.getDescription());
+                ps.setDate(6, Date.valueOf(transaction.getTransactionDate()));
 
-            ps.setString(2, transaction.getDescription());
+            int affectedRows = ps.executeUpdate();
 
-            ps.setDate( 3, Date.valueOf(transaction.getTransactionDate()));
+            if (affectedRows == 0) {
+                return false;
+            }
 
-            ps.setString(4, transaction.getTransactionType().name());
+            try (ResultSet generatedKeys = ps.getGeneratedKeys()) {
+                if (generatedKeys.next()) {
+                    transaction.setTransactionId(generatedKeys.getLong(1));
+                }
+            }
 
-            ps.setLong(5, transaction.getAccountId());
-
-            ps.setLong(
-                    6,
-                    transaction.getCategoryId());
-
-            return ps.executeUpdate() > 0;
-
+            return true;
         } catch (SQLException e) {
-
             e.printStackTrace();
+            return false;
         }
-
-        return false;
     }
 
     @Override
-    public Optional<Transaction> findById(Long id) {
-
-        try (
-                Connection connection = getConnection();
-                PreparedStatement ps = connection.prepareStatement(FIND_BY_ID)
+    public Optional<Transaction> findById(Long transactionId) {
+         try (
+            Connection connection = getConnection();
+            PreparedStatement ps = connection.prepareStatement(FIND_BY_ID)
         ) {
 
-            ps.setLong(1, id);
+            ps.setLong(1, transactionId);
 
-            ResultSet rs = ps.executeQuery();
+            try (ResultSet rs = ps.executeQuery()) {
 
-            if (rs.next()) {
-                return Optional.of(mapRow(rs));
+                if (rs.next()) {
+                    return Optional.of(mapRow(rs));
+                }
             }
 
         } catch (SQLException e) {
-
             e.printStackTrace();
         }
 
@@ -155,301 +149,239 @@ public class TransactionDAOImpl
 
     @Override
     public List<Transaction> findAll() {
-        return List.of();
-    }
-
-    @Override
-    public List<Transaction> findAllByUser(Long userId) {
-
-        List<Transaction> transactions =
-                new ArrayList<>();
+        List<Transaction> transactions = new ArrayList<>();
 
         try (
                 Connection connection = getConnection();
-                PreparedStatement ps =
-                        connection.prepareStatement(FIND_BY_USER);
-                    ) {
-            ps.setLong(1, userId);
-            ResultSet rs = ps.executeQuery();
+                PreparedStatement ps = connection.prepareStatement(FIND_ALL);
+                ResultSet rs = ps.executeQuery()
+        ) {
             while (rs.next()) {
                 transactions.add(mapRow(rs));
             }
 
         } catch (SQLException e) {
-
             e.printStackTrace();
         }
+        return transactions;
+    }
 
+    @Override
+    public List<Transaction> findByBudgetId(Long budgetId) {
+        List<Transaction> transactions = new ArrayList<>();
+        try (
+                Connection connection = getConnection();
+                PreparedStatement ps = connection.prepareStatement(FIND_BY_BUDGET_ID)
+        ) {
+            ps.setLong(1, budgetId);
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    transactions.add(mapRow(rs));
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return transactions;
+    }
+
+    @Override
+    public List<Transaction> findByCategory(Long categoryId) {
+        List<Transaction> transactions = new ArrayList<>();
+        String query = "SELECT * FROM transactions WHERE category_id = ? ORDER BY transaction_date DESC";
+        try (
+                Connection connection = getConnection();
+                PreparedStatement ps = connection.prepareStatement(query)
+        ) {
+            ps.setLong(1, categoryId);
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    transactions.add(mapRow(rs));
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return transactions;
+    }
+
+    @Override
+    public List<Transaction> findByDateRange( Long budgetId, LocalDate start, LocalDate end){
+        List<Transaction> transactions = new ArrayList<>();
+        try (
+                Connection connection = getConnection();
+                PreparedStatement ps = connection.prepareStatement(FIND_BY_DATE_RANGE)
+        ) {
+            ps.setLong(1, budgetId);
+            ps.setDate(2, Date.valueOf(start));
+            ps.setDate(3, Date.valueOf(end));
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    transactions.add(mapRow(rs));
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return transactions;
+    }
+
+    @Override
+    public List<Transaction> search(Long budgetId, String keyword) {
+        List<Transaction> transactions = new ArrayList<>();
+        try (
+                Connection connection = getConnection();
+                PreparedStatement ps = connection.prepareStatement(SEARCH)
+        ) { 
+            ps.setLong(1, budgetId);
+            ps.setString(2, "%" + keyword + "%");
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    transactions.add(mapRow(rs));
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
         return transactions;
     }
 
     @Override
     public boolean update(Transaction transaction) {
-
         try (
                 Connection connection = getConnection();
-                PreparedStatement ps =
-                        connection.prepareStatement(UPDATE)
+                PreparedStatement ps = connection.prepareStatement(UPDATE)
         ) {
-
-            ps.setBigDecimal(
-                    1,
-                    transaction.getAmount());
-
-            ps.setString(
-                    2,
-                    transaction.getDescription());
-
-            ps.setDate(
-                    3,
-                    Date.valueOf(
-                            transaction.getTransactionDate()));
-
-            ps.setString(
-                    4,
-                    transaction.getTransactionType().name());
-
-            ps.setLong(
-                    5,
-                    transaction.getAccountId());
-
-            ps.setLong(
-                    6,
-                    transaction.getCategoryId());
-
-            ps.setLong(
-                    7,
-                    transaction.getTransactionId());
-
-            return ps.executeUpdate() > 0;
-
-        } catch (SQLException e) {
-
-            e.printStackTrace();
-        }
-
-        return false;
-    }
-
-    @Override
-    public boolean updateForUser(Transaction transaction, Long userId) {
-        try (
-                Connection connection = getConnection();
-                PreparedStatement ps = connection.prepareStatement(UPDATE_FOR_USER)
-        ) {
-            ps.setLong(1, transaction.getAccountId());
-            ps.setLong(2, transaction.getCategoryId());
-            ps.setBigDecimal(3, transaction.getAmount());
+            ps.setLong(1, transaction.getCategoryId());
+            ps.setString(2, transaction.getTransactionType().name());
+            ps.setLong(3, transaction.getAmount());
             ps.setString(4, transaction.getDescription());
             ps.setDate(5, Date.valueOf(transaction.getTransactionDate()));
-            ps.setString(6, transaction.getTransactionType().name());
-            ps.setLong(7, transaction.getAccountId());
-            ps.setLong(8, transaction.getCategoryId());
-            ps.setLong(9, transaction.getTransactionId());
-            ps.setLong(10, userId);
-            ps.setLong(11, userId);
-            ps.setLong(12, userId);
-
+            ps.setLong(6, transaction.getTransactionId());
             return ps.executeUpdate() > 0;
-
         } catch (SQLException e) {
             e.printStackTrace();
+            return false;
         }
-
-        return false;
     }
 
     @Override
-    public boolean delete(Long id) {
-
+    public boolean delete(Long transactionId) {
         try (
                 Connection connection = getConnection();
-                PreparedStatement ps =
-                        connection.prepareStatement(DELETE)
-        ) {
-
-            ps.setLong(1, id);
-
-            return ps.executeUpdate() > 0;
-
-        } catch (SQLException e) {
-
-            e.printStackTrace();
-        }
-
-        return false;
-    }
-
-    @Override
-    public boolean deleteForUser(Long transactionId, Long userId) {
-        try (
-                Connection connection = getConnection();
-                PreparedStatement ps = connection.prepareStatement(DELETE_FOR_USER)
+                PreparedStatement ps = connection.prepareStatement(DELETE)
         ) {
             ps.setLong(1, transactionId);
-            ps.setLong(2, userId);
-
             return ps.executeUpdate() > 0;
-
         } catch (SQLException e) {
             e.printStackTrace();
+            return false;
         }
-
-        return false;
     }
 
     @Override
-    public Map<String, Double> getExpensesByCategory(Long userId) {
-
-        String sql = """
-        SELECT c.category_name,
-               SUM(t.amount) AS total
-        FROM transactions t
-        JOIN categories c
-             ON t.category_id = c.category_id
-        JOIN accounts a
-             ON t.account_id = a.account_id
-        WHERE t.transaction_type = 'EXPENSE'
-        AND a.user_id = ?
-        GROUP BY c.category_name
-        """;
-
-        Map<String, Double> result =
-                new HashMap<>();
-
+    public List<TransactionView> searchView(Long budgetId, String keyword) {
+        List<TransactionView> transactions = new ArrayList<>();
+        String searchTerm = "%" + keyword.toLowerCase(Locale.ROOT) + "%";
         try (
                 Connection connection = getConnection();
-                PreparedStatement ps =
-                        connection.prepareStatement(sql)
+                PreparedStatement ps = connection.prepareStatement(SEARCH_VIEW)
         ) {
-
-            ps.setLong(1, userId);
-
-            try (ResultSet rs = ps.executeQuery()) {
-
-                while (rs.next()) {
-
-                    result.put(
-                            rs.getString("category_name"),
-                            rs.getDouble("total"));
-                }
-            }
-
-        } catch (SQLException e) {
-
-            e.printStackTrace();
-        }
-
-        return result;
-    }
-
-    @Override
-    public BigDecimal getTotalIncome(Long userId) {
-        return getSumByType("INCOME", userId);
-    }
-
-    @Override
-    public BigDecimal getTotalExpense(Long userId) {
-        return getSumByType("EXPENSE" , userId);
-    }
-
-    @Override
-    public Map<String, Double> getMonthlyIncome(Long userId) {
-        String sql = """
-        SELECT MONTH(t.transaction_date) AS month,
-               SUM(t.amount) AS total
-        FROM transactions t
-        JOIN accounts a
-             ON t.account_id = a.account_id
-        WHERE t.transaction_type = 'INCOME'
-        AND a.user_id = ?
-        GROUP BY MONTH(t.transaction_date)
-        ORDER BY MONTH(t.transaction_date)
-        """;
-        Map<String, Double> data = new LinkedHashMap<>();
-
-        try (
-                Connection connection = getConnection();
-                PreparedStatement ps =
-                        connection.prepareStatement(sql)
-        ) {
-            ps.setLong(1, userId);
+            ps.setLong(1, budgetId);
+            ps.setString(2, searchTerm);
+            ps.setString(3, searchTerm);
+            ps.setString(4, searchTerm);
             try (ResultSet rs = ps.executeQuery()) {
                 while (rs.next()) {
-
-                    data.put(
-                            String.valueOf(
-                                    rs.getInt("month")),
-                            rs.getDouble("total"));
+                    transactions.add(mapTransactionView(rs));
                 }
             }
         } catch (SQLException e) {
             e.printStackTrace();
         }
-        return data;
+        return transactions;
     }
 
     @Override
-    public Map<String, Double> getMonthlyExpense(Long userId) {
-
-        String sql = """
-        SELECT MONTH(t.transaction_date) AS month,
-               SUM(t.amount) AS total
-        FROM transactions t
-        JOIN accounts a
-             ON t.account_id = a.account_id
-        WHERE t.transaction_type = 'EXPENSE'
-        AND a.user_id = ?
-        GROUP BY MONTH(t.transaction_date)
-        ORDER BY MONTH(t.transaction_date)
-        """;
-
-        Map<String, Double> data =
-                new LinkedHashMap<>();
-
+    public List<TransactionView> findAllView(Long budgetId) {
+        List<TransactionView> transactions = new ArrayList<>();
         try (
                 Connection connection = getConnection();
-                PreparedStatement ps =
-                        connection.prepareStatement(sql)
+                PreparedStatement ps = connection.prepareStatement(FIND_ALL_VIEW)
         ) {
-            ps.setLong(1, userId);
+            ps.setLong(1, budgetId);
             try (ResultSet rs = ps.executeQuery()) {
                 while (rs.next()) {
-                    data.put(
-                            String.valueOf(
-                                    rs.getInt("month")),
-                            rs.getDouble("total"));
+                    transactions.add(mapTransactionView(rs));
                 }
             }
-
         } catch (SQLException e) {
             e.printStackTrace();
         }
-        return data;
+        return transactions;
     }
 
     @Override
-    public BigDecimal getCurrentBalance(Long userId) {
-
-        return getTotalIncome(userId)
-                .subtract(getTotalExpense(userId));
-    }
-
-    @Override
-    public long countTransactions(Long userId) {
-        String sql = """
-        SELECT COUNT(*)
-        FROM transactions t
-        JOIN accounts a
-             ON t.account_id = a.account_id
-        WHERE a.user_id = ?
-        """;
+    public BigDecimal getTotalIncome(Long budgetId) {
         try (
                 Connection connection = getConnection();
-                PreparedStatement ps =
-                        connection.prepareStatement(sql)
+                PreparedStatement ps = connection.prepareStatement(GET_TOTAL_INCOME)
         ) {
-            ps.setLong(1, userId);
+            ps.setLong(1, budgetId);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    return rs.getBigDecimal(1);
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return BigDecimal.ZERO;
+    }
+
+    @Override
+    public BigDecimal getTotalExpense(Long budgetId) {
+        try (
+                Connection connection = getConnection();
+                PreparedStatement ps = connection.prepareStatement(GET_TOTAL_EXPENSE)
+        ) {
+            ps.setLong(1, budgetId);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    return rs.getBigDecimal(1);
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return BigDecimal.ZERO;
+    }
+
+    @Override
+    public BigDecimal getCurrentBalance(Long budgetId) {
+        try (
+                Connection connection = getConnection();
+                PreparedStatement ps = connection.prepareStatement(GET_CURRENT_BALANCE)
+        ) {
+            ps.setLong(1, budgetId);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    return rs.getBigDecimal("balance");
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return BigDecimal.ZERO;
+    }
+
+    @Override
+    public long countTransactions(Long budgetId) {
+        try (
+                Connection connection = getConnection();
+                PreparedStatement ps = connection.prepareStatement(COUNT_TRANSACTIONS)
+        ) {
+            ps.setLong(1, budgetId);
             try (ResultSet rs = ps.executeQuery()) {
                 if (rs.next()) {
                     return rs.getLong(1);
@@ -462,181 +394,97 @@ public class TransactionDAOImpl
     }
 
     @Override
-    public List<Transaction> findByCategory(
-            Long categoryId,
-            Long userId) {
-
-        String sql = """
-                SELECT
-                    t.*,
-                    c.category_name
-                FROM transactions t
-                JOIN categories c
-                    ON c.category_id = t.category_id
-                JOIN accounts a
-                    ON a.account_id = t.account_id
-                WHERE t.category_id = ?
-                  AND a.user_id = ?
-                  AND c.user_id = ?
-                """;
-
-        return executeListQuery(
-                sql,
-                ps -> {
-                    ps.setLong(1, categoryId);
-                    ps.setLong(2, userId);
-                    ps.setLong(3, userId);
-                });
-    }
-
-    @Override
-    public List<Transaction> findByDateRange(
-            LocalDate start,
-            LocalDate end,
-            Long userId) {
-
-        String sql = """
-                SELECT
-                    t.*,
-                    c.category_name
-                FROM transactions t
-                JOIN categories c
-                    ON c.category_id = t.category_id
-                JOIN accounts a
-                    ON a.account_id = t.account_id
-                WHERE t.transaction_date BETWEEN ? AND ?
-                  AND a.user_id = ?
-                ORDER BY t.transaction_date DESC
-                """;
-
-        return executeListQuery(
-                sql,
-                ps -> {
-                    ps.setDate(1, Date.valueOf(start));
-                    ps.setDate(2, Date.valueOf(end));
-                    ps.setLong(3, userId);
-                });
-    }
-
-    @Override
-    public List<Transaction> search(
-            String keyword,
-            Long userId) {
-
-        String sql = """
-                SELECT
-                    t.*,
-                    c.category_name
-                FROM transactions t
-                JOIN categories c
-                    ON c.category_id = t.category_id
-                JOIN accounts a
-                    ON a.account_id = t.account_id
-                WHERE t.description LIKE ?
-                  AND a.user_id = ?
-                """;
-
-        return executeListQuery(
-                sql,
-                ps -> {
-                    ps.setString(
-                            1,
-                            "%" + keyword + "%");
-                    ps.setLong(2, userId);
-                });
-    }
-
-    private BigDecimal getSumByType(
-            String type,
-            Long userId) {
-
-        String sql = """
-        SELECT COALESCE(SUM(t.amount),0)
-        FROM transactions t
-        JOIN accounts a
-             ON t.account_id = a.account_id
-        WHERE t.transaction_type = ?
-        AND a.user_id = ?
-        """;
-
+    public Map<String, Double> getExpensesByCategory(Long budgetId) {
+        Map<String, Double> expenses = new LinkedHashMap<>();
         try (
                 Connection connection = getConnection();
-                PreparedStatement ps =
-                        connection.prepareStatement(sql)
+                PreparedStatement ps = connection.prepareStatement(GET_EXPENSES_BY_CATEGORY)
         ) {
-
-            ps.setString(1, type);
-            ps.setLong(2, userId);
-
-            ResultSet rs = ps.executeQuery();
-
-            if (rs.next()) {
-                return rs.getBigDecimal(1);
+            ps.setLong(1, budgetId);
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    expenses.put(rs.getString("category"), rs.getDouble("total"));
+                }
             }
-
         } catch (SQLException e) {
             e.printStackTrace();
         }
-
-        return BigDecimal.ZERO;
+        return expenses;
     }
 
-    private List<Transaction> executeListQuery(
-            String sql,
-            StatementSetter setter) {
-
-        List<Transaction> transactions =
-                new ArrayList<>();
-
+    @Override
+    public Map<String, Double> getMonthlyIncome(Long budgetId) {
+        Map<String, Double> income = new LinkedHashMap<>();
         try (
                 Connection connection = getConnection();
-                PreparedStatement ps =
-                        connection.prepareStatement(sql)
+                PreparedStatement ps = connection.prepareStatement(GET_MONTHLY_INCOME)
         ) {
-
-            setter.setValues(ps);
-
-            ResultSet rs = ps.executeQuery();
-
-            while (rs.next()) {
-
-                transactions.add(mapRow(rs));
+            ps.setLong(1, budgetId);
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    income.put(rs.getString("month"), rs.getDouble("total"));
+                }
             }
-
-        } catch (Exception e) {
-
+        } catch (SQLException e) {
             e.printStackTrace();
         }
-
-        return transactions;
+        return income;
     }
 
-    private Transaction mapRow( ResultSet rs) throws SQLException {
+    @Override
+    public Map<String, Double> getMonthlyExpense(Long budgetId) {
+        Map<String, Double> expense = new LinkedHashMap<>();
+        try (
+                Connection connection = getConnection();
+                PreparedStatement ps = connection.prepareStatement(GET_MONTHLY_EXPENSE)
+        ) {
+            ps.setLong(1, budgetId);
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    expense.put(rs.getString("month"), rs.getDouble("total"));
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return expense;
+    }
+
+    private Transaction mapRow(ResultSet rs) throws SQLException {
 
         Transaction transaction = new Transaction();
 
         transaction.setTransactionId(rs.getLong("transaction_id"));
-
-        transaction.setAmount(rs.getBigDecimal("amount"));
-
-        transaction.setDescription(rs.getString("description"));
-
-        transaction.setTransactionDate(rs.getDate("transaction_date").toLocalDate());
-
-        transaction.setTransactionType(TransactionType.valueOf(rs.getString("transaction_type")));
-        
-        transaction.setAccountId(rs.getLong("account_id"));
-
+        transaction.setBudgetId(rs.getLong("budget_id"));
         transaction.setCategoryId(rs.getLong("category_id"));
+        transaction.setTransactionType(TransactionType.valueOf(rs.getString("transaction_type")));
+        transaction.setAmount(rs.getLong("amount"));
+        transaction.setDescription(rs.getString("description"));
+        transaction.setTransactionDate(rs.getDate("transaction_date").toLocalDate());
+        Timestamp created = rs.getTimestamp("created_at");
 
-        transaction.setCategoryName(rs.getString("category_name"));
+        if (created != null) {
+            transaction.setCreatedAt(created.toLocalDateTime());
+        }
+
+        Timestamp updated = rs.getTimestamp("updated_at");
+
+        if (updated != null) {
+            transaction.setUpdatedAt(updated.toLocalDateTime());
+        }
+
         return transaction;
     }
 
-    @FunctionalInterface
-    private interface StatementSetter {
-        void setValues(
-                PreparedStatement ps)
-                throws SQLException;
+    private TransactionView mapTransactionView(ResultSet rs) throws SQLException {
+        TransactionView view = new TransactionView();
+        view.setTransactionId(rs.getLong("transaction_id"));
+        view.setCategory(rs.getString("category"));
+        view.setType(rs.getString("transaction_type"));
+        view.setAmount(rs.getBigDecimal("amount"));
+        view.setDescription(rs.getString("description"));
+        view.setTransactionDate(rs.getDate("transaction_date").toLocalDate());
+        return view;
     }
+
 }

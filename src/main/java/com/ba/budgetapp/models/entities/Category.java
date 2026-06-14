@@ -1,5 +1,6 @@
 package com.ba.budgetapp.models.entities;
 
+import java.time.LocalDateTime;
 import java.util.Objects;
 
 /**
@@ -16,19 +17,38 @@ import java.util.Objects;
 public class Category {
 
     private Long categoryId;
-    private String categoryName;
-    private Long userId;
+
+    private Long budgetId;
+
+    private String title;
+
+    private LocalDateTime createdAt;
+
+    private LocalDateTime updatedAt;
 
     public Category() {
     }
 
-    public Category(Long categoryId,
-                    String categoryName,
-                    Long userId) {
+    public void validate() {
 
+        if (budgetId == null) {
+            throw new IllegalArgumentException("Budget obligatoire.");
+        }
+
+        if (title == null || title.isBlank()) {
+            throw new IllegalArgumentException("Titre obligatoire.");
+        }
+
+    }
+
+    public Category(Long categoryId,
+                    String title,
+                    LocalDateTime createdAt,
+                    LocalDateTime updatedAt) {
         this.categoryId = categoryId;
-        this.categoryName = categoryName;
-        this.userId = userId;
+        this.title = title;
+        this.createdAt = createdAt;
+        this.updatedAt = updatedAt;
     }
 
     public Long getCategoryId() {
@@ -39,34 +59,50 @@ public class Category {
         this.categoryId = categoryId;
     }
 
-    public String getCategoryName() {
-        return categoryName;
+    public String getTitle() {
+        return title;
     }
 
-    public void setCategoryName(String categoryName) {
+    public void setTitle(String title) {
 
-        if (categoryName == null ||
-                categoryName.isBlank()) {
+        if (title == null ||
+                title.isBlank()) {
 
             throw new IllegalArgumentException(
-                    "Nom catégorie obligatoire");
+                    "Titre obligatoire");
         }
 
-        this.categoryName = categoryName;
+        this.title = title;
     }
 
-    public Long getUserId() {
-        return userId;
+    public Long getBudgetId() {
+        return budgetId;
     }
 
-    public void setUserId(Long userId) {
+    public void setBudgetId(Long budgetId) {
 
-        if (userId == null || userId <= 0) {
+        if (budgetId == null || budgetId <= 0) {
             throw new IllegalArgumentException(
-                    "Utilisateur invalide");
+                    "Budget invalide");
         }
 
-        this.userId = userId;
+        this.budgetId = budgetId;
+    }
+
+    public LocalDateTime getCreatedAt() {
+        return createdAt;
+    }
+
+    public void setCreatedAt(LocalDateTime createdAt) {
+        this.createdAt = createdAt;
+    }
+
+    public LocalDateTime getUpdatedAt() {
+        return updatedAt;
+    }
+
+    public void setUpdatedAt(LocalDateTime updatedAt) {
+        this.updatedAt = updatedAt;
     }
 
     @Override
@@ -88,6 +124,6 @@ public class Category {
 
     @Override
     public String toString() {
-        return categoryName;
+        return title;
     }
 }

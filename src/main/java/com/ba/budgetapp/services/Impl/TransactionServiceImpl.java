@@ -3,95 +3,110 @@ package com.ba.budgetapp.services.Impl;
 import com.ba.budgetapp.models.DAO.Impl.TransactionDAOImpl;
 import com.ba.budgetapp.models.DAO.Interface.TransactionDAO;
 import com.ba.budgetapp.models.entities.Transaction;
-import com.ba.budgetapp.services.Interface.AccountService;
-import com.ba.budgetapp.services.Interface.CategoryService;
+import com.ba.budgetapp.models.entities.TransactionView;
 import com.ba.budgetapp.services.Interface.TransactionService;
-import com.ba.budgetapp.utils.SessionManager;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 public class TransactionServiceImpl implements TransactionService {
 
-    private final TransactionDAO transactionDAO;
-    private final AccountService accountService = new AccountServiceImpl();
-    private final CategoryService categoryService = new CategoryServiceImpl();
-
-    public TransactionServiceImpl() {
-        this.transactionDAO = new TransactionDAOImpl();
-    }
+    private final TransactionDAO transactionDAO = new TransactionDAOImpl();
 
     @Override
-    public boolean createTransaction(Transaction transaction) {
-        validateTransaction(transaction);
+    public boolean create(Transaction transaction) {
+        transaction.validate();
         return transactionDAO.create(transaction);
     }
 
     @Override
-    public boolean updateTransaction(Transaction transaction) {
-        validateTransaction(transaction);
-        return transactionDAO.updateForUser(transaction, currentUserId());
+    public boolean update(Transaction transaction) {
+        transaction.validate();
+        return transactionDAO.update(transaction);
     }
 
     @Override
-    public boolean deleteTransaction(Long id) {
-        return transactionDAO.deleteForUser(id, currentUserId());
-    }
-
-    @Override
-    public List<Transaction> findAllByUserId(Long userId){
-        return transactionDAO.findAllByUser(userId);
+    public boolean delete(Long transactionId) {
+        return transactionDAO.delete(transactionId);
     }
 
     @Override
     public Optional<Transaction> findById(Long transactionId) {
-        return transactionDAO.findById(transactionId)
-                .filter(transaction -> accountService
-                        .getAccountByIdForUser(transaction.getAccountId(), currentUserId())
-                        .isPresent());
+        return transactionDAO.findById(transactionId);
     }
 
     @Override
-    public List<Transaction> searchTransactions(String keyword) {
-        return transactionDAO.search(keyword, currentUserId());
+    public List<Transaction> findAll() {
+        return transactionDAO.findAll();
     }
 
     @Override
-    public List<Transaction> getTransactionsByCategory(Long categoryId) {
-        return transactionDAO.findByCategory(categoryId, currentUserId());
+    public List<Transaction> findByBudgetId(Long budgetId) {
+        return transactionDAO.findByBudgetId(budgetId);
     }
 
     @Override
-    public List<Transaction> getTransactionsByDateRange( LocalDate start, LocalDate end) {
-        return transactionDAO.findByDateRange(start, end, currentUserId());
+    public List<Transaction> findByCategory(Long categoryId) {
+        return transactionDAO.findByCategory(categoryId);
     }
 
-    private void validateTransaction(Transaction transaction) {
-        if (transaction == null) {
-            throw new IllegalArgumentException("Transaction invalide");
-        }
-        Long userId = currentUserId();
-        if (accountService
-                .getAccountByIdForUser(transaction.getAccountId(), userId)
-                .filter(account -> account.isActive())
-                .isEmpty()) {
-            throw new IllegalStateException(
-                    "Le compte est désactivé ou inaccessible."
-            );
-        }
-        if (categoryService
-                .getCategoryByIdForUser(transaction.getCategoryId(), userId)
-                .isEmpty()) {
-            throw new IllegalStateException("Catégorie inaccessible.");
-        }
+    @Override
+    public List<Transaction> findByDateRange(Long budgetId,LocalDate start,LocalDate end) {
+
+        return transactionDAO.findByDateRange(budgetId,start,end);
     }
 
-    private Long currentUserId() {
-        Long userId = SessionManager.getCurrentUserId();
-        if (userId == null) {
-            throw new IllegalStateException("Aucun utilisateur connecté.");
-        }
-        return userId;
+    @Override
+    public List<Transaction> search(Long budgetId,String keyword) {
+
+        return transactionDAO.search(budgetId,keyword);
+    }
+
+    @Override
+    public List<TransactionView> searchView(Long budgetId, String keyword) {
+        return transactionDAO.searchView(budgetId, keyword);
+    }
+
+    @Override
+    public List<TransactionView> findAllView(Long budgetId) {
+        return transactionDAO.findAllView(budgetId);
+    }
+
+    @Override
+    public BigDecimal getTotalIncome(Long budgetId) {
+        return transactionDAO.getTotalIncome(budgetId);
+    }
+
+    @Override
+    public BigDecimal getTotalExpense(Long budgetId) {
+        return transactionDAO.getTotalExpense(budgetId);
+    }
+
+    @Override
+    public BigDecimal getCurrentBalance(Long budgetId) {
+        return transactionDAO.getCurrentBalance(budgetId);
+    }
+
+    @Override
+    public long countTransactions(Long budgetId) {
+        return transactionDAO.countTransactions(budgetId);
+    }
+
+    @Override
+    public Map<String, Double> getExpensesByCategory(Long budgetId) {
+        return transactionDAO.getExpensesByCategory(budgetId);
+    }
+
+    @Override
+    public Map<String, Double> getMonthlyIncome(Long budgetId) {
+        return transactionDAO.getMonthlyIncome(budgetId);
+    }
+
+    @Override
+    public Map<String, Double> getMonthlyExpense(Long budgetId) {
+        return transactionDAO.getMonthlyExpense(budgetId);
     }
 }

@@ -1,15 +1,12 @@
 package com.ba.budgetapp.models.DAO.Interface;
 
-import java.util.List;
 import java.util.Optional;
 
 import com.ba.budgetapp.models.entities.Account;
 
 public interface AccountDAO extends CrudDAO<Account, Long> {
-
-    List<Account> findByUserId(Long userId);
-
-    List<Account> findActiveByUserId(Long userId);
-
-    Optional<Account> findByIdAndUserId(Long accountId, Long userId);
+    Optional<Account> findByUsername(String username);
+    Optional<Account> findByEmail(String email);
+    boolean existsByUsername(String username);
+    boolean existsByEmail(String email);
 }

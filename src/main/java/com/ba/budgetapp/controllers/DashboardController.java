@@ -1,6 +1,5 @@
 package com.ba.budgetapp.controllers;
 
-import com.ba.budgetapp.services.Impl.DashboardServiceImpl;
 import com.ba.budgetapp.services.Interface.DashboardService;
 import com.ba.budgetapp.services.Interface.ServiceFactory;
 import com.ba.budgetapp.utils.SessionManager;
@@ -45,11 +44,10 @@ public class DashboardController {
         loadStatistics();
         loadPieChart();
         loadBarChart();
-        System.out.println(SessionManager.getCurrentUser().getUsername());
     }
 
     private Long getCurrentUserId() {
-        return SessionManager.getCurrentUserId();
+        return null;
     }
 
     private void loadStatistics() {

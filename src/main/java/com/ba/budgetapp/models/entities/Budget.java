@@ -1,33 +1,59 @@
 package com.ba.budgetapp.models.entities;
 
-import java.math.BigDecimal;
-import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.Objects;
 
 /**
  * Budget mensuel associé à une catégorie.
  *
- * @author Etudiant
+ * @author Yassine
  */
+
 public class Budget {
 
     private Long budgetId;
-    private BigDecimal amount;
-    private LocalDate budgetMonth;
-    private Long userId;
+
+    private Long ownerId;
+
+    private String title;
+
+    private String currency;
+
+    private LocalDateTime createdAt;
+
+    private LocalDateTime updatedAt;
 
     public Budget() {
     }
 
     public Budget(Long budgetId,
-                  BigDecimal amount,
-                  LocalDate budgetMonth,
-                  Long userId) {
+                  Long ownerId,
+                  String title,
+                  String currency,
+                  LocalDateTime createdAt,
+                  LocalDateTime updatedAt) {
 
         this.budgetId = budgetId;
-        this.amount = amount;
-        this.budgetMonth = budgetMonth;
-        this.userId = userId;
+        this.ownerId = ownerId;
+        this.title = title;
+        this.currency = currency;
+        this.createdAt = createdAt;
+        this.updatedAt = updatedAt;
+    }
+
+    public void validate() {
+
+        if (ownerId == null) {
+            throw new IllegalArgumentException("Owner obligatoire.");
+        }
+
+        if (title == null || title.isBlank()) {
+            throw new IllegalArgumentException("Titre obligatoire.");
+        }
+
+        if (currency == null || currency.isBlank()) {
+            throw new IllegalArgumentException("Devise obligatoire.");
+        }
     }
 
     public Long getBudgetId() {
@@ -38,61 +64,51 @@ public class Budget {
         this.budgetId = budgetId;
     }
 
-    public BigDecimal getAmount() {
-        return amount;
+    public Long getOwnerId() {
+        return ownerId;
     }
 
-    public void setAmount(BigDecimal amount) {
-
-        if (amount == null ||
-                amount.compareTo(BigDecimal.ZERO) <= 0) {
-
-            throw new IllegalArgumentException(
-                    "Montant invalide");
-        }
-
-        this.amount = amount;
+    public void setOwnerId(Long ownerId) {
+        this.ownerId = ownerId;
     }
 
-    public LocalDate getBudgetMonth() {
-        return budgetMonth;
+    public String getTitle() {
+        return title;
     }
 
-    public void setBudgetMonth(LocalDate budgetMonth) {
-
-        if (budgetMonth == null) {
-            throw new IllegalArgumentException(
-                    "Date obligatoire");
-        }
-
-        this.budgetMonth = budgetMonth;
+    public void setTitle(String title) {
+        this.title = title;
     }
 
-    public Long getUserId() {
-        return userId;
+    public String getCurrency() {
+        return currency;
     }
 
-    public void setUserId(Long userId) {
+    public void setCurrency(String currency) {
+        this.currency = currency;
+    }
 
-        if (userId == null || userId <= 0) {
-            throw new IllegalArgumentException(
-                    "Utilisateur invalide");
-        }
+    public LocalDateTime getCreatedAt() {
+        return createdAt;
+    }
 
-        this.userId = userId;
+    public void setCreatedAt(LocalDateTime createdAt) {
+        this.createdAt = createdAt;
+    }
+
+    public LocalDateTime getUpdatedAt() {
+        return updatedAt;
+    }
+
+    public void setUpdatedAt(LocalDateTime updatedAt) {
+        this.updatedAt = updatedAt;
     }
 
     @Override
     public boolean equals(Object o) {
-
         if (this == o) return true;
-
-        if (!(o instanceof Budget budget))
-            return false;
-
-        return Objects.equals(
-                budgetId,
-                budget.budgetId);
+        if (!(o instanceof Budget budget)) return false;
+        return Objects.equals(budgetId, budget.budgetId);
     }
 
     @Override
@@ -102,11 +118,6 @@ public class Budget {
 
     @Override
     public String toString() {
-        return "Budget{" +
-                "budgetId=" + budgetId +
-                ", amount=" + amount +
-                ", budgetMonth=" + budgetMonth +
-                ", userId=" + userId +
-                '}';
+        return title;
     }
 }
