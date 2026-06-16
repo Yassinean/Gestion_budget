@@ -1,7 +1,52 @@
-<VBox xmlns="http://javafx.com/javafx"
-      xmlns:fx="http://javafx.com/fxml"
-      alignment="CENTER">
+<?xml version="1.0" encoding="UTF-8"?>
 
-    <Label text="Budgets"/>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
 
-</VBox>
+<BorderPane xmlns:fx="http://javafx.com/fxml"
+            fx:controller="com.ba.budgetapp.controllers.BudgetController">
+
+    <top>
+        <VBox spacing="10" style="-fx-padding:15;">
+            <Label text="Gestion des Budgets"/>
+            <GridPane hgap="10" vgap="10">
+                <Label text="Titre :" GridPane.rowIndex="0" GridPane.columnIndex="0"/>
+                <TextField fx:id="titleField"
+                           GridPane.rowIndex="0"
+                           GridPane.columnIndex="1"/>
+                <Label text="Devise :" GridPane.rowIndex="1" GridPane.columnIndex="0"/>
+                <ComboBox fx:id="currencyBox"
+                          GridPane.rowIndex="1"
+                          GridPane.columnIndex="1"/>
+            </GridPane>
+            <HBox spacing="10">
+                <Button text="Ajouter"
+                        onAction="#addBudget"/>
+                <Button text="Modifier"
+                        onAction="#updateBudget"/>
+                <Button text="Supprimer"
+                        onAction="#deleteBudget"/>
+            </HBox>
+        </VBox>
+    </top>
+
+    <center>
+        <TableView fx:id="budgetTable">
+            <columns>
+                <TableColumn fx:id="idColumn"
+                             text="ID"
+                             prefWidth="80"/>
+
+                <TableColumn fx:id="titleColumn"
+                             text="Titre"
+                             prefWidth="250"/>
+
+                <TableColumn fx:id="currencyColumn"
+                             text="Devise"
+                             prefWidth="150"/>
+
+            </columns>
+        </TableView>
+    </center>
+
+</BorderPane>

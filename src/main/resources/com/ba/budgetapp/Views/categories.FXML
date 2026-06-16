@@ -7,60 +7,45 @@
 <BorderPane xmlns="http://javafx.com/javafx/21"
             xmlns:fx="http://javafx.com/fxml"
             fx:controller="com.ba.budgetapp.controllers.CategoriesController"
-            stylesheets="@../css/style.css">
+            stylesheets="/home/yassine/Documents/Gestion_budget/src/main/resources/com/ba/budgetapp/CSS/style.css">
 
     <top>
-
         <VBox spacing="8" styleClass="page-header">
-
             <padding>
                 <Insets top="20" right="25" bottom="20" left="25"/>
             </padding>
-
             <Label text="Gestion des Catégories"
                    styleClass="page-title"/>
 
             <Label text="Créer, modifier et supprimer vos catégories."
                    styleClass="page-subtitle"/>
-
         </VBox>
-
     </top>
-
     <center>
-
         <HBox spacing="25">
-
             <padding>
                 <Insets top="20" right="25" bottom="20" left="25"/>
             </padding>
-
             <!-- FORMULAIRE -->
-
             <VBox spacing="15"
                   prefWidth="320"
                   styleClass="card">
-
                 <Label text="Nouvelle catégorie"
                        styleClass="section-title"/>
-
                 <TextField fx:id="categoryNameField"
-                           promptText="Nom de la catégorie"/>
-
+                           promptText="Nom de la catégorie"
+                            styleClass="text-field"/>
                 <HBox spacing="10">
-
                     <Button text="Ajouter"
                             onAction="#addCategory"
                             styleClass="btn-success"
                             HBox.hgrow="ALWAYS"
                             maxWidth="Infinity"/>
-
                     <Button text="Modifier"
                             onAction="#updateCategory"
                             styleClass="btn-primary"
                             HBox.hgrow="ALWAYS"
                             maxWidth="Infinity"/>
-
                 </HBox>
 
                 <Button text="Supprimer"
@@ -69,48 +54,34 @@
                         styleClass="btn-danger"/>
 
             </VBox>
-
             <!-- TABLE -->
-
             <VBox VBox.vgrow="ALWAYS"
                   HBox.hgrow="ALWAYS"
                   spacing="10"
                   styleClass="card">
 
                 <HBox spacing="10">
-
                     <Label text="Liste des catégories"
                            styleClass="section-title"/>
-
                     <Region HBox.hgrow="ALWAYS"/>
-
                     <Button text="Actualiser"
                             onAction="#refreshTable"
                             styleClass="btn-secondary"/>
-
                 </HBox>
 
                 <TableView fx:id="categoryTable"
-                           VBox.vgrow="ALWAYS">
-
+                           VBox.vgrow="ALWAYS"
+                           styleClass="table-view">
                     <columns>
-
                         <TableColumn fx:id="idColumn"
                                      text="ID"
                                      prefWidth="90"/>
-
                         <TableColumn fx:id="nameColumn"
                                      text="Nom de la catégorie"
                                      prefWidth="350"/>
-
                     </columns>
-
                 </TableView>
-
             </VBox>
-
         </HBox>
-
     </center>
-
 </BorderPane>

@@ -16,37 +16,37 @@ public class DashboardServiceImpl implements DashboardService {
     }
 
     @Override
-    public BigDecimal getTotalIncome(Long userId) {
-        return transactionDAO.getTotalIncome(userId);
+    public BigDecimal getTotalIncome(Long budgetId) {
+        return transactionDAO.getTotalIncome(budgetId);
     }
 
     @Override
-    public BigDecimal getTotalExpense(Long userId) {
-        return transactionDAO.getTotalExpense(userId);
+    public BigDecimal getTotalExpense(Long budgetId) {
+        return transactionDAO.getTotalExpense(budgetId);
     }
 
     @Override
-    public BigDecimal getCurrentBalance(Long userId) {
-        return transactionDAO.getCurrentBalance(userId);
+    public BigDecimal getCurrentBalance(Long budgetId) {
+        return transactionDAO.getCurrentBalance(budgetId);
     }
 
     @Override
-    public long getTransactionCount(Long userId) {
-        return transactionDAO.countTransactions(userId);
+    public long getTransactionCount(Long budgetId) {
+        return transactionDAO.countTransactions(budgetId);
     }
 
     @Override
-    public Map<String, Double> getExpensesByCategory(Long userId) {
-        return transactionDAO.getExpensesByCategory(userId);
+    public Map<String, Double> getExpensesByCategory(Long budgetId) {
+        return transactionDAO.getExpensesByCategory(budgetId);
     }
 
     @Override
-    public Map<String, Double> getMonthlyIncome(Long userId) {
-        return transactionDAO.getMonthlyIncome(userId);
+    public Map<String, Double> getMonthlyIncome(Long budgetId) {
+        return transactionDAO.getMonthlyIncome(budgetId);
     }
 
     @Override
-    public Map<String, Double> getMonthlyExpense(Long userId) {
-        return transactionDAO.getMonthlyExpense(userId);
+    public Map<String, Double> getMonthlyExpense(Long budgetId) {
+        return transactionDAO.getMonthlyExpense(budgetId);
     }
 }

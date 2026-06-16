@@ -23,8 +23,21 @@ public final class NavigationUtil {
         return FXMLLoader.load(resource);
     }
 
-    public static void setScene(Stage stage, String path) throws IOException {
-        stage.setScene(new Scene(loadFXML(path)));
+    public static void setScene(Stage stage, String fxml) throws IOException {
+
+        Parent root = FXMLLoader.load(
+                NavigationUtil.class.getResource(fxml)
+        );
+
+        Scene scene = new Scene(root);
+
+        scene.getStylesheets().add(
+                NavigationUtil.class
+                        .getResource("/com/ba/budgetapp/CSS/style.css")
+                        .toExternalForm()
+        );
+
+        stage.setScene(scene);
     }
 
     public static void loadInto(StackPane container, String path) throws IOException {

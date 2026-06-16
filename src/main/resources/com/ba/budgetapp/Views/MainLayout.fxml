@@ -6,6 +6,7 @@
 <BorderPane fx:id="rootPane"
             xmlns="http://javafx.com/javafx"
             xmlns:fx="http://javafx.com/fxml"
+            stylesheets="@/com/ba/budgetapp/CSS/style.css"
             fx:controller="com.ba.budgetapp.controllers.MainController">
 
     <!-- HEADER -->
@@ -46,10 +47,6 @@
                     maxWidth="Infinity"
                     onAction="#showTransactions"/>
 
-            <Button fx:id="accountBtn"
-                    text="Accounts"
-                    maxWidth="Infinity"
-                    onAction="#showAccounts"/>
 
             <Button fx:id="budgetBtn"
                     text="Budgets"

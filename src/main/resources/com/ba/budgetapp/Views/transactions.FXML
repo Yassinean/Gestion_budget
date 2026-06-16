@@ -7,7 +7,8 @@
 
 <BorderPane xmlns="http://javafx.com/javafx"
             xmlns:fx="http://javafx.com/fxml"
-            fx:controller="com.ba.budgetapp.controllers.TransactionController">
+            fx:controller="com.ba.budgetapp.controllers.TransactionController"
+            stylesheets="/home/yassine/Documents/Gestion_budget/src/main/resources/com/ba/budgetapp/CSS/style.css">
 
     <!-- ================= TOP ================= -->
 
@@ -28,9 +29,11 @@
                            promptText="Recherche..." HBox.hgrow="ALWAYS"/>
 
                 <Button text="Rechercher"
+                        styleClass="btn-primary"
                         onAction="#searchTransaction"/>
 
                 <Button text="Actualiser"
+                        styleClass="btn-secondary"
                         onAction="#refreshTable"/>
 
             </HBox>
@@ -47,7 +50,7 @@
 
             <!-- ================= FORM ================= -->
 
-            <VBox spacing="12">
+            <VBox spacing="12" styleClass="card">
 
                 <padding>
                     <Insets top="20" right="20" bottom="20" left="20"/>
@@ -74,15 +77,18 @@
 
                     <Button text="Ajouter"
                             maxWidth="Infinity"
-                            onAction="#addTransaction"/>
+                            onAction="#addTransaction"
+                            styleClass="btn-success"/>
 
                     <Button text="Modifier"
                             maxWidth="Infinity"
-                            onAction="#updateTransaction"/>
+                            onAction="#updateTransaction"
+                            styleClass="btn-primary"/>
 
                     <Button text="Supprimer"
                             maxWidth="Infinity"
-                            onAction="#deleteTransaction"/>
+                            onAction="#deleteTransaction"
+                            styleClass="btn-danger"/>
 
                 </VBox>
 
@@ -90,7 +96,7 @@
 
             <!-- ================= TABLE ================= -->
 
-            <VBox spacing="10">
+            <VBox spacing="10" styleClass="card">
 
                 <padding>
                     <Insets top="20" right="20" bottom="20" left="20"/>

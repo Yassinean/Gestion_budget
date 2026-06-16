@@ -8,7 +8,9 @@
       xmlns:fx="http://javafx.com/fxml"
       fx:controller="com.ba.budgetapp.controllers.LoginController"
       alignment="CENTER"
-      spacing="20">
+      spacing="20"
+      styleClass="login-container"
+      stylesheets="/home/yassine/Documents/Gestion_budget/src/main/resources/com/ba/budgetapp/CSS/style.css">
 
     <padding>
         <Insets top="40"
@@ -17,9 +19,9 @@
                 left="40"/>
     </padding>
     <Label text="Budget Manager" styleClass="login-title"/>
-    <TextField fx:id="usernameField" promptText="Nom d'utilisateur"/>
-    <TextField fx:id="emailField" promptText="Adresse e-mail"/>
-    <PasswordField fx:id="passwordField" promptText="Mot de passe"/>
-    <Button text="Connexion" onAction="#login"/>
+    <TextField fx:id="usernameField" promptText="Nom d'utilisateur" styleClass="text-field"/>
+    <TextField fx:id="emailField" promptText="Adresse e-mail" styleClass="text-field"/>
+    <PasswordField fx:id="passwordField" promptText="Mot de passe" styleClass="password-field"/>
+    <Button text="Connexion" onAction="#login" styleClass="btn-primary"/>
     <Hyperlink text="Créer un compte" onAction="#goToRegister"/>
 </VBox>

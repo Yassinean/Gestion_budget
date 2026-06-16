@@ -16,7 +16,7 @@ import java.util.Optional;
 /**
  * Implémentation JDBC du DAO Category.
  *
- * @author Etudiant
+ * @author yhanach
  */
 public class CategoryDAOImpl extends BaseDAO implements CategoryDAO {
 

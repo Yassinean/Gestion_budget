@@ -3,125 +3,154 @@ package com.ba.budgetapp.controllers;
 import com.ba.budgetapp.services.Interface.DashboardService;
 import com.ba.budgetapp.services.Interface.ServiceFactory;
 import com.ba.budgetapp.utils.SessionManager;
+
+import javafx.animation.FadeTransition;
+import javafx.animation.ScaleTransition;
 import javafx.fxml.FXML;
 import javafx.scene.chart.BarChart;
 import javafx.scene.chart.PieChart;
 import javafx.scene.chart.XYChart;
 import javafx.scene.control.Label;
+import javafx.scene.layout.VBox;
+import javafx.util.Duration;
 
 import java.math.BigDecimal;
-import java.util.Map;
 
 public class DashboardController {
 
-    @FXML
-    private Label totalIncomeLabel;
+    @FXML private Label totalIncomeLabel;
+    @FXML private Label totalExpenseLabel;
+    @FXML private Label balanceLabel;
+    @FXML private Label transactionCountLabel;
 
-    @FXML
-    private Label totalExpenseLabel;
+    @FXML private PieChart expensePieChart;
+    @FXML private BarChart<String, Number> monthlyBarChart;
 
-    @FXML
-    private Label balanceLabel;
+    @FXML private VBox incomeCard;
+    @FXML private VBox expenseCard;
+    @FXML private VBox balanceCard;
+    @FXML private VBox countCard;
+    Long budgetId = SessionManager.getCurrentBudgetId();
 
-    @FXML
-    private Label transactionCountLabel;
-
-    @FXML
-    private PieChart expensePieChart;
-
-    @FXML
-    private BarChart<String, Number> monthlyBarChart;
-
-    private final DashboardService dashboardService = ServiceFactory.dashboardService();
+    private final DashboardService service = ServiceFactory.dashboardService();
 
     @FXML
     public void initialize() {
-        Long userId = getCurrentUserId();
-        if (userId == null) {
-            // No user logged in; skip dashboard initialization
-            return;
-        }
-        loadStatistics();
-        loadPieChart();
-        loadBarChart();
+
+        totalIncomeLabel.setText(service.getTotalIncome(budgetId) + " DH");
+        totalExpenseLabel.setText(service.getTotalExpense(budgetId) + " DH");
+        balanceLabel.setText(service.getCurrentBalance(budgetId) + " DH");
+        transactionCountLabel.setText(String.valueOf(service.getTransactionCount(budgetId)));
+
+        setLoadingState(true);
+
+        applyHoverAnimation(incomeCard);
+        applyHoverAnimation(expenseCard);
+        applyHoverAnimation(balanceCard);
+        applyHoverAnimation(countCard);
+        loadDashboard();
     }
 
-    private Long getCurrentUserId() {
-        return null;
+    public void setBudgetId(Long budgetId) {
+        this.budgetId = budgetId;
+        loadDashboard();
     }
 
-    private void loadStatistics() {
-        Long userId = getCurrentUserId();
-        if (userId == null) return;
-        try {
-            BigDecimal income = dashboardService.getTotalIncome(userId);
-            BigDecimal expense = dashboardService.getTotalExpense(userId);
-            BigDecimal balance = dashboardService.getCurrentBalance(userId);
-            long count = dashboardService.getTransactionCount(userId);
-            totalIncomeLabel.setText(income + " DH");
-            totalExpenseLabel.setText(expense + " DH");
-            balanceLabel.setText(balance + " DH");
-            transactionCountLabel.setText(String.valueOf(count));
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+    private void loadDashboard() {
+
+        FadeTransition fade = new FadeTransition(Duration.millis(600));
+        fade.setFromValue(0);
+        fade.setToValue(1);
+
+        loadCards();
+        loadPie();
+        loadBar();
+
+        setLoadingState(false);
+        
     }
 
-    private void loadBarChart() {
-        Long userId = getCurrentUserId();
-        if (userId == null) return;
-        try {
-            monthlyBarChart.getData().clear();
-            XYChart.Series<String, Number> incomeSeries =
-                    new XYChart.Series<>();
-            incomeSeries.setName("Revenus");
-            dashboardService
-                    .getMonthlyIncome(userId)
-                    .forEach((month, amount) -> {
-                        incomeSeries.getData().add(
-                                new XYChart.Data<>(
-                                        month,
-                                        amount)
-                        );
-                    });
+    // ---------------- CARDS ----------------
+    private void loadCards() {
 
-            XYChart.Series<String, Number> expenseSeries = new XYChart.Series<>();
-            expenseSeries.setName("Dépenses");
+        BigDecimal income = service.getTotalIncome(budgetId);
+        BigDecimal expense = service.getTotalExpense(budgetId);
+        BigDecimal balance = service.getCurrentBalance(budgetId);
+        long count = service.getTransactionCount(budgetId);
 
-            dashboardService
-                    .getMonthlyExpense(userId)
-                    .forEach((month, amount) -> {
-
-                        expenseSeries.getData().add(
-
-                                new XYChart.Data<>(
-                                        month,
-                                        amount)
-                        );
-                    });
-
-            monthlyBarChart.getData().add(incomeSeries);
-            monthlyBarChart.getData().add(expenseSeries);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+        animateLabel(totalIncomeLabel, income + " DH");
+        animateLabel(totalExpenseLabel, expense + " DH");
+        animateLabel(balanceLabel, balance + " DH");
+        animateLabel(transactionCountLabel, String.valueOf(count));
     }
 
-    private void loadPieChart() {
-        Long userId = getCurrentUserId();
-        if (userId == null) return;
-        try {
-            expensePieChart.getData().clear();
-            Map<String, Double> expenses = dashboardService.getExpensesByCategory(userId);
-            expenses.forEach((category, amount) -> {
-                expensePieChart.getData().add(
-                        new PieChart.Data(
-                                category,
-                                amount)
+    // ---------------- PIE ----------------
+    private void loadPie() {
+        expensePieChart.getData().clear();
+
+        service.getExpensesByCategory(budgetId)
+                .forEach((cat, val) ->
+                        expensePieChart.getData().add(
+                                new PieChart.Data(cat, val)
+                        )
                 );
-            });
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+    }
+
+    // ---------------- BAR ----------------
+    private void loadBar() {
+        monthlyBarChart.getData().clear();
+
+        XYChart.Series<String, Number> inc = new XYChart.Series<>();
+        inc.setName("Income");
+
+        service.getMonthlyIncome(budgetId)
+                .forEach((m, v) ->
+                        inc.getData().add(new XYChart.Data<>(m, v))
+                );
+
+        XYChart.Series<String, Number> exp = new XYChart.Series<>();
+        exp.setName("Expense");
+
+        service.getMonthlyExpense(budgetId)
+                .forEach((m, v) ->
+                        exp.getData().add(new XYChart.Data<>(m, v))
+                );
+
+        monthlyBarChart.getData().addAll(inc, exp);
+    }
+
+    // ---------------- ANIMATIONS ----------------
+    private void animateLabel(Label label, String text) {
+        FadeTransition ft = new FadeTransition(Duration.millis(400), label);
+        ft.setFromValue(0.3);
+        ft.setToValue(1);
+        label.setText(text);
+        ft.play();
+    }
+
+    private void applyHoverAnimation(VBox card) {
+        card.setOnMouseEntered(e -> {
+            ScaleTransition st = new ScaleTransition(Duration.millis(150), card);
+            st.setToX(1.05);
+            st.setToY(1.05);
+            st.play();
+        });
+
+        card.setOnMouseExited(e -> {
+            ScaleTransition st = new ScaleTransition(Duration.millis(150), card);
+            st.setToX(1);
+            st.setToY(1);
+            st.play();
+        });
+    }
+
+    // ---------------- LOADING SKELETON ----------------
+    private void setLoadingState(boolean loading) {
+        double opacity = loading ? 0.3 : 1;
+
+        totalIncomeLabel.setOpacity(opacity);
+        totalExpenseLabel.setOpacity(opacity);
+        balanceLabel.setOpacity(opacity);
+        transactionCountLabel.setOpacity(opacity);
     }
 }

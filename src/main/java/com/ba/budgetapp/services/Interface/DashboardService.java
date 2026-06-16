@@ -4,17 +4,17 @@ import java.math.BigDecimal;
 import java.util.Map;
 
 public interface DashboardService {
-    BigDecimal getTotalIncome(Long userId);
+    BigDecimal getTotalIncome(Long budgetId);
 
-    BigDecimal getTotalExpense(Long userId);
+    BigDecimal getTotalExpense(Long budgetId);
 
-    BigDecimal getCurrentBalance(Long userId);
+    BigDecimal getCurrentBalance(Long budgetId);
 
-    long getTransactionCount(Long userId);
+    long getTransactionCount(Long budgetId);
 
-    Map<String, Double> getExpensesByCategory(Long userId);
+    Map<String, Double> getExpensesByCategory(Long budgetId);
 
-    Map<String, Double> getMonthlyIncome(Long userId);
+    Map<String, Double> getMonthlyIncome(Long budgetId);
 
-    Map<String, Double> getMonthlyExpense(Long userId);
+    Map<String, Double> getMonthlyExpense(Long budgetId);
 }

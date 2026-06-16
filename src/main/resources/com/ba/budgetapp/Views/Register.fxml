@@ -31,7 +31,8 @@
                    promptText="Confirmer le mot de passe"/>
 
     <Button text="Créer le compte"
-            onAction="#register"/>
+            onAction="#register"
+             styleClass="btn-success"/>
 
     <Hyperlink text="Déjà un compte ? Se connecter"
                onAction="#goToLogin"/>
