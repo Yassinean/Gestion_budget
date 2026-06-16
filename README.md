@@ -47,38 +47,6 @@ Cette application permet aux utilisateurs de gérer leurs budgets, catégories, 
 - Évolution mensuelle des revenus et dépenses (Bar Chart)
 
 ---
-
-# 🏗️ Architecture
-
-Le projet suit une architecture en couches inspirée du modèle MVC.
-
-```text
-src/main/java
-│
-├── model
-│   ├── Account
-│   ├── Budget
-│   ├── Category
-│   └── Transaction
-│
-├── dao
-│   ├── interfaces
-│   └── implementations
-│
-├── service
-│   ├── interfaces
-│   └── implementations
-│
-├── controller
-│
-├── view
-│   ├── fxml
-│   └── css
-│
-├── util
-│
-└── config
-
 ## Mermaid 
 ```mermaid
 flowchart TD
@@ -202,3 +170,34 @@ class node_basedao,node_daos,node_dbconn toneIndigo
 class node_fxml,node_css,node_dbprops,node_schema toneTeal
 
 ```
+
+# 🏗️ Architecture
+
+Le projet suit une architecture en couches inspirée du modèle MVC.
+
+```text
+src/main/java
+│
+├── model
+│   ├── Account
+│   ├── Budget
+│   ├── Category
+│   └── Transaction
+│
+├── dao
+│   ├── interfaces
+│   └── implementations
+│
+├── service
+│   ├── interfaces
+│   └── implementations
+│
+├── controller
+│
+├── view
+│   ├── fxml
+│   └── css
+│
+├── util
+│
+└── config
