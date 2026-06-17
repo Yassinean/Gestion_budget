@@ -32,6 +32,8 @@
                   styleClass="card">
                 <Label text="Nouvelle catégorie"
                        styleClass="section-title"/>
+                <ComboBox fx:id="budgetCombo"
+                        promptText="Budget"/>
                 <TextField fx:id="categoryNameField"
                            promptText="Nom de la catégorie"
                             styleClass="text-field"/>
@@ -78,6 +80,9 @@
                                      prefWidth="90"/>
                         <TableColumn fx:id="nameColumn"
                                      text="Nom de la catégorie"
+                                     prefWidth="350"/>
+                        <TableColumn fx:id="nameBudgetColumn"
+                                     text="Nom du budget"
                                      prefWidth="350"/>
                     </columns>
                 </TableView>

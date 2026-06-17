@@ -13,6 +13,7 @@ public interface CategoryService {
     boolean delete(Long id);
     Optional<Category> findById(Long id);
     List<Category> findByBudgetId(Long budgetId);
+    List<Category> findByOwnerId(Long ownerId);
     List<Category> findByType(Long budgetId,TransactionType type);
     Optional<Category> findByTitle(Long budgetId,String categoryName);
 }

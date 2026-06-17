@@ -41,6 +41,11 @@ public class CategoryServiceImpl implements CategoryService {
     }
 
     @Override
+    public List<Category> findByOwnerId(Long ownerId) {
+        return categoryDAO.findByOwnerId(ownerId);
+    }
+
+    @Override
     public List<Category> findByType(Long budgetId, TransactionType type) {
         return categoryDAO.findByType(budgetId,type);
     }

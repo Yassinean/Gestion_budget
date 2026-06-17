@@ -1,15 +1,20 @@
 package com.ba.budgetapp.controllers;
 
+import com.ba.budgetapp.models.entities.Budget;
 import com.ba.budgetapp.models.entities.Category;
+import com.ba.budgetapp.services.Interface.BudgetService;
 import com.ba.budgetapp.services.Interface.CategoryService;
 import com.ba.budgetapp.services.Interface.ServiceFactory;
 import com.ba.budgetapp.utils.AlertUtil;
 import com.ba.budgetapp.utils.SessionManager;
 import javafx.fxml.FXML;
+import javafx.scene.control.ComboBox;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 import javafx.scene.control.TextField;
 import javafx.scene.control.cell.PropertyValueFactory;
+
+import java.util.List;
 
 public class CategoriesController {
 
@@ -25,12 +30,20 @@ public class CategoriesController {
     @FXML
     private TableColumn<Category, String> nameColumn;
 
+    @FXML
+    private TableColumn<Category, String> nameBudgetColumn;
+
+    @FXML
+    private ComboBox<Budget> budgetCombo;
+
     private final CategoryService categoryService = ServiceFactory.categoryService();
+    private final BudgetService budgetService = ServiceFactory.budgetService();
 
     @FXML
     public void initialize() {
         idColumn.setCellValueFactory(new PropertyValueFactory<>("categoryId"));
         nameColumn.setCellValueFactory(new PropertyValueFactory<>("title"));
+        nameBudgetColumn.setCellValueFactory(new PropertyValueFactory<>("budgetTitle"));
         categoryTable.getSelectionModel()
                 .selectedItemProperty()
                 .addListener((observable, oldValue, selected) -> {
@@ -38,6 +51,8 @@ public class CategoriesController {
                         categoryNameField.setText(selected.getTitle());
                     }
                 });
+
+        loadBudgets();
         refreshTable();
     }
 
@@ -60,11 +75,15 @@ public class CategoriesController {
                 AlertUtil.showError("Cette catégorie existe déjà.");
                 return;
             }
+            Budget selectedBudget = budgetCombo.getValue();
 
+            if(selectedBudget == null){
+                AlertUtil.showError("Veuillez sélectionner un budget");
+                return;
+            }
             Category category = new Category();
-            category.setTitle(name);
-            category.setBudgetId(budgetId);
-
+            category.setBudgetId(selectedBudget.getBudgetId());
+            category.setTitle(categoryNameField.getText());
             categoryService.create(category);
             refreshTable();
             clearForm();
@@ -111,7 +130,17 @@ public class CategoriesController {
 
     @FXML
     private void refreshTable() {
-        categoryTable.getItems().setAll(categoryService.findByBudgetId(SessionManager.getCurrentBudgetId()));
+        Long accountId = SessionManager.getCurrentAccountId();
+        categoryTable.getItems().setAll(
+                accountId == null ? List.of() : categoryService.findByOwnerId(accountId)
+        );
+    }
+
+    private void loadBudgets() {
+        Long accountId = SessionManager.getCurrentAccountId();
+        budgetCombo.getItems().setAll(
+                accountId == null ? List.of() : budgetService.findByOwnerId(accountId)
+        );
     }
 
     private void clearForm() {

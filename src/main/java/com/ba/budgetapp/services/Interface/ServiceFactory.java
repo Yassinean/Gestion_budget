@@ -1,11 +1,16 @@
 package com.ba.budgetapp.services.Interface;
 
 import com.ba.budgetapp.services.Impl.AccountServiceImpl;
+import com.ba.budgetapp.services.Impl.BudgetServiceImpl;
 import com.ba.budgetapp.services.Impl.CategoryServiceImpl;
 import com.ba.budgetapp.services.Impl.DashboardServiceImpl;
 import com.ba.budgetapp.services.Impl.TransactionServiceImpl;
 
 public final class ServiceFactory {
+
+    private static final BudgetService BUDGET_SERVICE =
+            new BudgetServiceImpl();
+
     private static final TransactionService TRANSACTION_SERVICE =
             new TransactionServiceImpl();
 
@@ -30,6 +35,10 @@ public final class ServiceFactory {
 
     public static AccountService accountService() {
         return ACCOUNT_SERVICE;
+    }
+
+    public static BudgetService budgetService() {
+        return BUDGET_SERVICE;
     }
 
     public static DashboardService dashboardService() {

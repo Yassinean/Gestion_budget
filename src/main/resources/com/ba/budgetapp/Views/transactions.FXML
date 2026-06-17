@@ -59,8 +59,12 @@
                 <Label text="Nouvelle Transaction"
                        styleClass="section-title"/>
 
+                <ComboBox fx:id="budgetCombo"
+                        promptText="Budget"/>
+
                 <ComboBox fx:id="categoryCombo"
-                          promptText="Catégorie"/>
+                        promptText="Catégorie"
+                        disable="true"/>
 
                 <ComboBox fx:id="typeCombo"
                           promptText="Type"/>

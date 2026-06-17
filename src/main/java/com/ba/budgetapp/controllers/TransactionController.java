@@ -1,9 +1,11 @@
 package com.ba.budgetapp.controllers;
 
+import com.ba.budgetapp.models.entities.Budget;
 import com.ba.budgetapp.models.entities.Category;
 import com.ba.budgetapp.models.entities.Transaction;
 import com.ba.budgetapp.models.entities.TransactionType;
 import com.ba.budgetapp.models.entities.TransactionView;
+import com.ba.budgetapp.services.Interface.BudgetService;
 import com.ba.budgetapp.services.Interface.CategoryService;
 import com.ba.budgetapp.services.Interface.ServiceFactory;
 import com.ba.budgetapp.services.Interface.TransactionService;
@@ -20,6 +22,7 @@ import javafx.scene.control.cell.PropertyValueFactory;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.util.List;
 
 public class TransactionController {
     
@@ -62,9 +65,14 @@ public class TransactionController {
     @FXML
     private TableColumn<TransactionView, String> descriptionColumn;
 
+    @FXML
+    private ComboBox<Budget> budgetCombo;
+
     private final TransactionService transactionService;
 
     private final CategoryService categoryService;
+
+    private final BudgetService budgetService = ServiceFactory.budgetService();
 
     public TransactionController() {
         this(ServiceFactory.transactionService(), ServiceFactory.categoryService());
@@ -77,8 +85,16 @@ public class TransactionController {
 
     @FXML
     public void initialize() {
+        budgetCombo.valueProperty().addListener((obs, oldValue, newValue) -> {
+            loadCategoriesForBudget(newValue);
+            if (newValue != null) {
+                SessionManager.setCurrentBudget(newValue);
+            }
+            refreshTable();
+        });
+
         configureTable();
-        loadCategories();
+        loadBudgets();
         loadTransactionTypes();
         refreshTable();
     }
@@ -92,13 +108,29 @@ public class TransactionController {
         amountColumn.setCellValueFactory(new PropertyValueFactory<>("amount"));
     }
 
-    private void loadCategories() {
-        Long budgetId = SessionManager.getCurrentBudgetId();
-        categoryCombo.getItems().setAll(categoryService.findByBudgetId(budgetId));
-    }
-
     private void loadTransactionTypes() {
         typeCombo.getItems().setAll(TransactionType.values());
+    }
+
+    private void loadBudgets() {
+        Long accountId = SessionManager.getCurrentAccountId();
+        budgetCombo.getItems().setAll(
+                accountId == null ? List.of() : budgetService.findByOwnerId(accountId)
+        );
+        Budget currentBudget = SessionManager.getCurrentBudget();
+        if (currentBudget != null) {
+            budgetCombo.setValue(currentBudget);
+        }
+    }
+
+    private void loadCategoriesForBudget(Budget budget) {
+        categoryCombo.getItems().clear();
+        if(budget == null){
+            categoryCombo.setDisable(true);
+            return;
+        }
+        categoryCombo.setDisable(false);
+        categoryCombo.getItems().setAll(categoryService.findByBudgetId(budget.getBudgetId()));
     }
 
     @FXML
@@ -138,14 +170,34 @@ public class TransactionController {
             Transaction transaction = new Transaction();
 
             transaction.setBudgetId(SessionManager.getCurrentBudgetId());
-            transaction.setCategoryId(category.getCategoryId());
+            Budget selectedBudget = budgetCombo.getValue();
+
+            Category selectedCategory = categoryCombo.getValue();
+            if(selectedBudget == null){
+                AlertUtil.showError("Budget obligatoire");
+                return;
+            }
+
+            if(selectedCategory == null){
+                AlertUtil.showError("Catégorie obligatoire");
+                return;
+            }
+            
+            transaction.setBudgetId(selectedBudget.getBudgetId());
+            transaction.setCategoryId(selectedCategory.getCategoryId());
             transaction.setTransactionType(type);
 
-            // IMPORTANT
             transaction.setAmount(Long.parseLong(amountField.getText().trim()));
 
             transaction.setDescription(descriptionField.getText());
             transaction.setTransactionDate(datePicker.getValue());
+
+            if(!selectedCategory.getBudgetId().equals(selectedBudget.getBudgetId())){
+                AlertUtil.showError(
+                "La catégorie ne correspond pas au budget sélectionné."
+                );
+                return;
+            }
 
             transactionService.create(transaction);
 

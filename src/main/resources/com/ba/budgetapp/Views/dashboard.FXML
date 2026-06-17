@@ -6,7 +6,6 @@
 
 <AnchorPane xmlns:fx="http://javafx.com/fxml"
             fx:controller="com.ba.budgetapp.controllers.DashboardController"
-            stylesheets="/home/yassine/Documents/Gestion_budget/src/main/resources/com/ba/budgetapp/CSS/style.css
             style="-fx-background-color:#0f172a;">
 
     <VBox spacing="20" AnchorPane.topAnchor="20"
@@ -16,6 +15,11 @@
         <!-- HEADER -->
         <Label text="Financial Dashboard"
                styleClass="title-label"/>
+
+        <HBox spacing="10" alignment="CENTER_LEFT">
+            <Label text="Budget :" styleClass="section-title"/>
+            <ComboBox fx:id="budgetFilterCombo" promptText="Sélectionner un budget" prefWidth="260"/>
+        </HBox>
 
         <!-- KPI CARDS -->
         <HBox spacing="20">

@@ -77,7 +77,7 @@ public class TransactionDAOImpl extends BaseDAO implements TransactionDAO {
         """;
 
     private static final String GET_MONTHLY_INCOME = """
-        SELECT TO_CHAR(transaction_date, 'YYYY-MM') AS month, COALESCE(SUM(amount), 0) AS total
+        SELECT DATE_FORMAT(transaction_date, '%Y-%m') AS month , COALESCE(SUM(amount), 0) AS total
         FROM transactions
         WHERE budget_id = ? AND transaction_type = 'INCOME'
         GROUP BY month
@@ -85,7 +85,7 @@ public class TransactionDAOImpl extends BaseDAO implements TransactionDAO {
         """;
 
     private static final String GET_MONTHLY_EXPENSE = """
-        SELECT TO_CHAR(transaction_date, 'YYYY-MM') AS month, COALESCE(SUM(amount), 0) AS total
+        SELECT DATE_FORMAT(transaction_date, '%Y-%m') AS month , COALESCE(SUM(amount), 0) AS total
         FROM transactions
         WHERE budget_id = ? AND transaction_type = 'EXPENSE'
         GROUP BY month

@@ -1,5 +1,7 @@
 package com.ba.budgetapp.controllers;
 
+import com.ba.budgetapp.models.entities.Budget;
+import com.ba.budgetapp.services.Interface.BudgetService;
 import com.ba.budgetapp.services.Interface.DashboardService;
 import com.ba.budgetapp.services.Interface.ServiceFactory;
 import com.ba.budgetapp.utils.SessionManager;
@@ -10,11 +12,13 @@ import javafx.fxml.FXML;
 import javafx.scene.chart.BarChart;
 import javafx.scene.chart.PieChart;
 import javafx.scene.chart.XYChart;
+import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
 import javafx.scene.layout.VBox;
 import javafx.util.Duration;
 
 import java.math.BigDecimal;
+import java.util.List;
 
 public class DashboardController {
 
@@ -25,6 +29,7 @@ public class DashboardController {
 
     @FXML private PieChart expensePieChart;
     @FXML private BarChart<String, Number> monthlyBarChart;
+    @FXML private ComboBox<Budget> budgetFilterCombo;
 
     @FXML private VBox incomeCard;
     @FXML private VBox expenseCard;
@@ -33,9 +38,11 @@ public class DashboardController {
     Long budgetId = SessionManager.getCurrentBudgetId();
 
     private final DashboardService service = ServiceFactory.dashboardService();
+    private final BudgetService budgetService = ServiceFactory.budgetService();
 
     @FXML
     public void initialize() {
+        loadBudgetFilter();
 
         totalIncomeLabel.setText(service.getTotalIncome(budgetId) + " DH");
         totalExpenseLabel.setText(service.getTotalExpense(budgetId) + " DH");
@@ -117,6 +124,31 @@ public class DashboardController {
                 );
 
         monthlyBarChart.getData().addAll(inc, exp);
+    }
+
+    private void loadBudgetFilter() {
+        Long accountId = SessionManager.getCurrentAccountId();
+        budgetFilterCombo.getItems().setAll(
+                accountId == null ? List.of() : budgetService.findByOwnerId(accountId)
+        );
+        Budget currentBudget = SessionManager.getCurrentBudget();
+        if (currentBudget != null) {
+            budgetFilterCombo.setValue(currentBudget);
+            budgetId = currentBudget.getBudgetId();
+        } else if (!budgetFilterCombo.getItems().isEmpty()) {
+            Budget firstBudget = budgetFilterCombo.getItems().get(0);
+            budgetFilterCombo.setValue(firstBudget);
+            budgetId = firstBudget.getBudgetId();
+            SessionManager.setCurrentBudget(firstBudget);
+        }
+
+        budgetFilterCombo.valueProperty().addListener((obs, oldValue, newValue) -> {
+            if (newValue != null) {
+                budgetId = newValue.getBudgetId();
+                SessionManager.setCurrentBudget(newValue);
+                loadDashboard();
+            }
+        });
     }
 
     // ---------------- ANIMATIONS ----------------

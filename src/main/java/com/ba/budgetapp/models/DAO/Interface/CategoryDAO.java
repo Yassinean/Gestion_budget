@@ -9,6 +9,7 @@ import java.util.Optional;
 public interface CategoryDAO extends CrudDAO<Category, Long> {
 
     List<Category> findByBudgetId(Long budgetId);
+    List<Category> findByOwnerId(Long ownerId);
     List<Category> findByType(Long budgetId,TransactionType type);
     Optional<Category> findByTitle(Long budgetId, String title);
     boolean existsByTitle(Long budgetId, String title);

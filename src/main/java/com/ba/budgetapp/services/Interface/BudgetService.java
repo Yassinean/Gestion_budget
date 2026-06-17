@@ -12,4 +12,5 @@ public interface BudgetService {
         Optional<Budget> findById(Long id);
         List<Budget> findByOwnerId(Long ownerId);
         Optional<Budget> findDefaultBudget(Long ownerId);
+        List<Budget> findAll();
 }

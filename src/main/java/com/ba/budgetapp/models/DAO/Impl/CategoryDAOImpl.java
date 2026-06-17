@@ -39,10 +39,20 @@ public class CategoryDAOImpl extends BaseDAO implements CategoryDAO {
     """;
 
     private static final String FIND_BY_BUDGET = """
-    SELECT *
-    FROM categories
-    WHERE budget_id = ?
-    ORDER BY title
+    SELECT c.*, b.title AS budget_title
+    FROM categories c
+    INNER JOIN budgets b
+    ON c.budget_id = b.budget_id
+    WHERE c.budget_id = ?;
+    """;
+
+    private static final String FIND_BY_OWNER = """
+    SELECT c.*, b.title AS budget_title
+    FROM categories c
+    INNER JOIN budgets b
+    ON c.budget_id = b.budget_id
+    WHERE b.owner_id = ?
+    ORDER BY c.title
     """;
 
     private static final String FIND_BY_TYPE = """
@@ -128,6 +138,28 @@ public class CategoryDAOImpl extends BaseDAO implements CategoryDAO {
     }
 
     @Override
+    public List<Category> findByOwnerId(Long ownerId) {
+        List<Category> categories = new ArrayList<>();
+
+        try (
+                Connection connection = getConnection();
+                PreparedStatement ps = connection.prepareStatement(FIND_BY_OWNER)
+        ) {
+            ps.setLong(1, ownerId);
+
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    categories.add(mapRow(rs));
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+        return categories;
+    }
+
+    @Override
     public List<Category> findAll() {
         List<Category> categories = new ArrayList<>();
 
@@ -204,7 +236,6 @@ public class CategoryDAOImpl extends BaseDAO implements CategoryDAO {
                 PreparedStatement ps = connection.prepareStatement(FIND_BY_TYPE)
         ) {
             ps.setLong(1, budgetId);
-            ps.setString(2, type.name());
             try (ResultSet rs = ps.executeQuery()) {
                 while (rs.next()) {
                     categories.add(mapRow(rs));
@@ -247,6 +278,13 @@ public class CategoryDAOImpl extends BaseDAO implements CategoryDAO {
         category.setBudgetId(rs.getLong("budget_id"));
 
         category.setTitle(rs.getString("title"));
+
+        try {
+            category.setBudgetTitle(rs.getString("budget_title"));
+        } catch (SQLException ignored) {
+            // budget_title is only available when the query joins budgets
+            category.setBudgetTitle(null);
+        }
 
         Timestamp created = rs.getTimestamp("created_at");
 

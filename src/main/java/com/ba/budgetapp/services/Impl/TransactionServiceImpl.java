@@ -1,7 +1,10 @@
 package com.ba.budgetapp.services.Impl;
 
+import com.ba.budgetapp.models.DAO.Impl.CategoryDAOImpl;
 import com.ba.budgetapp.models.DAO.Impl.TransactionDAOImpl;
+import com.ba.budgetapp.models.DAO.Interface.CategoryDAO;
 import com.ba.budgetapp.models.DAO.Interface.TransactionDAO;
+import com.ba.budgetapp.models.entities.Category;
 import com.ba.budgetapp.models.entities.Transaction;
 import com.ba.budgetapp.models.entities.TransactionView;
 import com.ba.budgetapp.services.Interface.TransactionService;
@@ -15,16 +18,31 @@ import java.util.Optional;
 public class TransactionServiceImpl implements TransactionService {
 
     private final TransactionDAO transactionDAO = new TransactionDAOImpl();
+    private final CategoryDAO categoryDAO = new CategoryDAOImpl();
 
     @Override
     public boolean create(Transaction transaction) {
-        transaction.validate();
+        Category category = categoryDAO.findById(transaction.getCategoryId()).orElseThrow();
+        if (!category.getBudgetId()
+                .equals(transaction.getBudgetId())) {
+
+            throw new IllegalArgumentException(
+                    "La catégorie n'appartient pas au budget."
+            );
+        }
         return transactionDAO.create(transaction);
     }
 
     @Override
     public boolean update(Transaction transaction) {
-        transaction.validate();
+        Category category = categoryDAO.findById(transaction.getCategoryId()).orElseThrow();
+        if (!category.getBudgetId()
+                .equals(transaction.getBudgetId())) {
+
+            throw new IllegalArgumentException(
+                    "La catégorie n'appartient pas au budget."
+            );
+        }
         return transactionDAO.update(transaction);
     }
 

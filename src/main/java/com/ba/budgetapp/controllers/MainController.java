@@ -2,8 +2,10 @@ package com.ba.budgetapp.controllers;
 
 import com.ba.budgetapp.utils.AlertUtil;
 import com.ba.budgetapp.utils.NavigationUtil;
+import com.ba.budgetapp.utils.SessionManager;
 import javafx.fxml.FXML;
 import javafx.scene.layout.StackPane;
+import javafx.stage.Stage;
 
 import java.io.IOException;
 
@@ -44,7 +46,14 @@ public class MainController {
 
     @FXML
     private void exitApplication() {
-        System.exit(0);
+        try {
+            SessionManager.clear();
+            Stage stage = (Stage) contentPane.getScene().getWindow();
+            NavigationUtil.setScene(stage, "/com/ba/budgetapp/Views/login.FXML");
+        } catch (Exception e) {
+            e.printStackTrace();
+            AlertUtil.showError("Impossible de se déconnecter.");
+        }
     }
 
     private void loadView(String path) {

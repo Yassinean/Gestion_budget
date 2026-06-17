@@ -43,4 +43,9 @@ public class BudgetServiceImpl implements BudgetService {
     public Optional<Budget> findDefaultBudget(Long ownerId) {
         return budgetDAO.findDefaultBudget(ownerId);
     }
+
+    @Override
+    public List<Budget> findAll() {
+        return budgetDAO.findAll();
+    }
 }

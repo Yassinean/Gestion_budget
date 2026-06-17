@@ -22,6 +22,8 @@ public class Category {
 
     private String title;
 
+    private String budgetTitle;
+
     private LocalDateTime createdAt;
 
     private LocalDateTime updatedAt;
@@ -125,5 +127,13 @@ public class Category {
     @Override
     public String toString() {
         return title;
+    }
+
+    public String getBudgetTitle() {
+        return budgetTitle;
+    }
+
+    public void setBudgetTitle(String budgetTitle) {
+        this.budgetTitle = budgetTitle;
     }
 }
