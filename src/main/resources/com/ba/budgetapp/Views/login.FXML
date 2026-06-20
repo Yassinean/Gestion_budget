@@ -19,7 +19,6 @@
                 left="40"/>
     </padding>
     <Label text="Budget Manager" styleClass="login-title"/>
-    <TextField fx:id="usernameField" promptText="Nom d'utilisateur" styleClass="text-field"/>
     <TextField fx:id="emailField" promptText="Adresse e-mail" styleClass="text-field"/>
     <PasswordField fx:id="passwordField" promptText="Mot de passe" styleClass="password-field"/>
     <Button text="Connexion" onAction="#login" styleClass="btn-primary"/>

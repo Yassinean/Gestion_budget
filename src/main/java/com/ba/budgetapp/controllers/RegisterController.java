@@ -1,5 +1,6 @@
 package com.ba.budgetapp.controllers;
 
+import com.ba.budgetapp.models.DAO.Impl.AccountDAOImpl;
 import com.ba.budgetapp.models.entities.Account;
 import com.ba.budgetapp.services.Impl.AccountServiceImpl;
 import com.ba.budgetapp.services.Interface.AccountService;
@@ -26,7 +27,7 @@ public class RegisterController {
     private PasswordField confirmPasswordField;
 
     private final AccountService accountService =
-            new AccountServiceImpl();
+            new AccountServiceImpl(new AccountDAOImpl());
 
     @FXML
     private void register() {
