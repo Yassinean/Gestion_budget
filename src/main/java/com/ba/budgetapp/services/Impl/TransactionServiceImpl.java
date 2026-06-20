@@ -1,13 +1,18 @@
 package com.ba.budgetapp.services.Impl;
 
+import com.ba.budgetapp.models.DAO.Impl.BudgetDAOImpl;
 import com.ba.budgetapp.models.DAO.Impl.CategoryDAOImpl;
 import com.ba.budgetapp.models.DAO.Impl.TransactionDAOImpl;
+import com.ba.budgetapp.models.DAO.Interface.BudgetDAO;
 import com.ba.budgetapp.models.DAO.Interface.CategoryDAO;
 import com.ba.budgetapp.models.DAO.Interface.TransactionDAO;
+import com.ba.budgetapp.models.entities.Budget;
 import com.ba.budgetapp.models.entities.Category;
 import com.ba.budgetapp.models.entities.Transaction;
+import com.ba.budgetapp.models.entities.TransactionType;
 import com.ba.budgetapp.models.entities.TransactionView;
 import com.ba.budgetapp.services.Interface.TransactionService;
+import com.ba.budgetapp.utils.AlertUtil;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -19,6 +24,7 @@ public class TransactionServiceImpl implements TransactionService {
 
     private final TransactionDAO transactionDAO = new TransactionDAOImpl();
     private final CategoryDAO categoryDAO = new CategoryDAOImpl();
+    private final BudgetDAO budgetDAO = new BudgetDAOImpl();
 
     @Override
     public boolean create(Transaction transaction) {
@@ -30,6 +36,7 @@ public class TransactionServiceImpl implements TransactionService {
                     "La catégorie n'appartient pas au budget."
             );
         }
+        checkBudgetWarning(transaction);
         return transactionDAO.create(transaction);
     }
 
@@ -126,5 +133,27 @@ public class TransactionServiceImpl implements TransactionService {
     @Override
     public Map<String, Double> getMonthlyExpense(Long budgetId) {
         return transactionDAO.getMonthlyExpense(budgetId);
+    }
+
+    private void checkBudgetWarning(Transaction transaction) {
+
+        if(transaction.getTransactionType() != TransactionType.EXPENSE){
+            return;
+        }
+
+        Budget budget = budgetDAO.findById(transaction.getBudgetId()).orElseThrow();
+
+        BigDecimal totalExpenses = transactionDAO.getTotalExpense( transaction.getBudgetId());
+
+        BigDecimal futureExpenses = totalExpenses.add(BigDecimal.valueOf(transaction.getAmount()));
+
+        BigDecimal remaining = budget.getAmount().subtract(futureExpenses);
+
+        if(remaining.compareTo(BigDecimal.ZERO) < 0){
+            AlertUtil.showInfo("Attention : après cette transaction "
+                    + "le budget deviendra négatif de "
+                    + remaining.abs() + " MAD"
+            );
+        }
     }
 }

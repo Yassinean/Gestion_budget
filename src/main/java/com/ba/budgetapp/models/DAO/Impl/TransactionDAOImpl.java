@@ -53,16 +53,26 @@ public class TransactionDAOImpl extends BaseDAO implements TransactionDAO {
         transaction_id DESC
         """;
 
-    private static final String GET_TOTAL_INCOME = "SELECT COALESCE(SUM(amount), 0) FROM transactions WHERE budget_id = ? AND transaction_type = 'INCOME'";
+    private static final String GET_TOTAL_INCOME = """
+            SELECT b.amount + COALESCE(SUM(t.amount), 0) 
+            FROM budgets b
+            LEFT JOIN transactions t ON t.budget_id = b.budget_id AND t.transaction_type = 'INCOME'
+            WHERE b.budget_id = ?
+            GROUP BY b.budget_id, b.amount
+            """;
 
     private static final String GET_TOTAL_EXPENSE = "SELECT COALESCE(SUM(amount), 0) FROM transactions WHERE budget_id = ? AND transaction_type = 'EXPENSE'";
 
     private static final String GET_CURRENT_BALANCE = """
         SELECT
-            COALESCE(SUM(CASE WHEN transaction_type = 'INCOME' THEN amount ELSE 0 END), 0) -
-            COALESCE(SUM(CASE WHEN transaction_type = 'EXPENSE' THEN amount ELSE 0 END), 0) AS balance
-        FROM transactions
-        WHERE budget_id = ?
+            b.amount
+            + COALESCE(SUM(CASE WHEN t.transaction_type = 'INCOME' THEN t.amount ELSE 0 END), 0)
+            - COALESCE(SUM(CASE WHEN t.transaction_type = 'EXPENSE' THEN t.amount ELSE 0 END), 0) AS balance
+        FROM budgets b
+        LEFT JOIN transactions t
+            ON t.budget_id = b.budget_id
+        WHERE b.budget_id = ?
+        GROUP BY b.budget_id, b.amount;
         """;
 
     private static final String COUNT_TRANSACTIONS = "SELECT COUNT(*) FROM transactions WHERE budget_id = ?";

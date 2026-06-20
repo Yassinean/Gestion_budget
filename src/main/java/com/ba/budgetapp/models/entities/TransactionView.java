@@ -5,7 +5,7 @@ import java.time.LocalDate;
 import java.util.Objects;
 
 /**
- * Représente une transaction financière.
+ * Représente une transaction financière.(view)
  *
  * @author Yassine
  */

@@ -7,7 +7,7 @@ import java.util.Objects;
 /**
  * Représente une transaction financière.
  *
- * @author Yhanach
+ * @author Yassine / Ahlam / Salma / Aziza
  */
 public class Transaction {
 
