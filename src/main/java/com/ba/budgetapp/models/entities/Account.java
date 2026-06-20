@@ -7,7 +7,7 @@ import java.util.Objects;
 
 /**
  * Représente un compte utilisateur de l'application.
- * @author Yassine Hanach
+ * @author Yassine / Ahlam / Salma / Aziza
  */
 public class Account {
     private Long accountId;
