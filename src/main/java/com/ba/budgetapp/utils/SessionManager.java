@@ -1,5 +1,6 @@
 package com.ba.budgetapp.utils;
 
+import com.ba.budgetapp.models.DAO.Impl.BudgetDAOImpl;
 import com.ba.budgetapp.models.entities.Account;
 import com.ba.budgetapp.models.entities.Budget;
 import com.ba.budgetapp.services.Impl.BudgetServiceImpl;
@@ -27,7 +28,7 @@ public final class SessionManager {
             return null;
         }
 
-        BudgetService budgetService = new BudgetServiceImpl();
+        BudgetService budgetService = new BudgetServiceImpl(new BudgetDAOImpl());
 
         return budgetService.findDefaultBudget(account.getAccountId())
                 .orElseGet(() -> createDefaultBudget(account, budgetService));

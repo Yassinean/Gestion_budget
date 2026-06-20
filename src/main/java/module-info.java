@@ -8,6 +8,7 @@ module com.ba.budgetapp {
 
     requires org.controlsfx.controls;
     requires org.bouncycastle.provider;
+    requires jbcrypt;
 
     opens com.ba.budgetapp to javafx.fxml;
     opens com.ba.budgetapp.controllers to javafx.fxml;

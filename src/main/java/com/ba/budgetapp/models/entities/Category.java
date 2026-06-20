@@ -12,7 +12,7 @@ import java.util.Objects;
  * Salaire
  * Freelance
  *
- * @author Etudiant
+ * @author Yassine / Ahlam / Salma / Aziza
  */
 public class Category {
 
