@@ -85,7 +85,7 @@ public class LoginController {
     private void goToRegister() {
 
         try {
-            Stage stage = (Stage) usernameField
+            Stage stage = (Stage) emailField
                     .getScene()
                     .getWindow();
             NavigationUtil.setScene(

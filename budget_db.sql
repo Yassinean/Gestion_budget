@@ -121,8 +121,6 @@ ON budgets(owner_id);
 CREATE INDEX idx_category_budget
 ON categories(budget_id);
 
-CREATE INDEX idx_category_type
-ON categories(tx_type);
 
 CREATE INDEX idx_transaction_budget
 ON transactions(budget_id);
