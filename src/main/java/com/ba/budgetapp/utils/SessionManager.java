@@ -6,6 +6,8 @@ import com.ba.budgetapp.models.entities.Budget;
 import com.ba.budgetapp.services.Impl.BudgetServiceImpl;
 import com.ba.budgetapp.services.Interface.BudgetService;
 
+import java.math.BigDecimal;
+
 public final class SessionManager {
 
     private static Account currentAccount;
@@ -39,7 +41,7 @@ public final class SessionManager {
         defaultBudget.setOwnerId(account.getAccountId());
         defaultBudget.setTitle("Budget principal");
         defaultBudget.setCurrency("MAD");
-
+        defaultBudget.setAmount(new BigDecimal(0));
         boolean created = budgetService.create(defaultBudget);
         if (!created || defaultBudget.getBudgetId() == null) {
             throw new IllegalStateException("Impossible d'initialiser le budget de session.");
