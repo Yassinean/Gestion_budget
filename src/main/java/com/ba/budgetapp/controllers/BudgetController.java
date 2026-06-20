@@ -1,5 +1,8 @@
 package com.ba.budgetapp.controllers;
 
+import java.math.BigDecimal;
+
+import com.ba.budgetapp.models.DAO.Impl.BudgetDAOImpl;
 import com.ba.budgetapp.models.entities.Budget;
 import com.ba.budgetapp.services.Impl.BudgetServiceImpl;
 import com.ba.budgetapp.services.Interface.BudgetService;
@@ -19,6 +22,12 @@ public class BudgetController {
     private TextField titleField;
 
     @FXML
+    private TextField amountField;
+
+    @FXML
+    private TableColumn<Budget, BigDecimal> amountColumn;
+
+    @FXML
     private ComboBox<String> currencyBox;
 
     @FXML
@@ -33,7 +42,7 @@ public class BudgetController {
     @FXML
     private TableColumn<Budget, String> currencyColumn;
 
-    private final BudgetService budgetService = new BudgetServiceImpl();
+    private final BudgetService budgetService = new BudgetServiceImpl(new BudgetDAOImpl());
 
     
     private final Long ownerId = SessionManager.getCurrentAccountId();
@@ -49,6 +58,9 @@ public class BudgetController {
 
         titleColumn.setCellValueFactory(
                 new PropertyValueFactory<>("title"));
+
+        amountColumn.setCellValueFactory(
+                new PropertyValueFactory<>("amount"));
 
         currencyColumn.setCellValueFactory(
                 new PropertyValueFactory<>("currency"));
@@ -90,14 +102,13 @@ public class BudgetController {
 
             budget.setTitle(titleField.getText());
 
+            budget.setAmount(new BigDecimal(amountField.getText()));
+
             budget.setCurrency(currencyBox.getValue());
 
             if (budgetService.create(budget)) {
-
                 clearFields();
-
                 loadBudgets();
-
             }
 
         } catch (Exception e) {
@@ -121,6 +132,8 @@ public class BudgetController {
         try {
 
             selected.setTitle(titleField.getText());
+
+            selected.setAmount(new BigDecimal(amountField.getText()));
 
             selected.setCurrency(currencyBox.getValue());
 

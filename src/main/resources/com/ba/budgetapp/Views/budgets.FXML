@@ -14,9 +14,18 @@
                 <TextField fx:id="titleField"
                            GridPane.rowIndex="0"
                            GridPane.columnIndex="1"/>
-                <Label text="Devise :" GridPane.rowIndex="1" GridPane.columnIndex="0"/>
+
+                <Label text="Montant :"
+                           GridPane.rowIndex="1"
+                           GridPane.columnIndex="0"/>
+
+                <TextField fx:id="amountField"
+                           GridPane.rowIndex="1"
+                           GridPane.columnIndex="1"/>           
+                
+                <Label text="Devise :" GridPane.rowIndex="2" GridPane.columnIndex="0"/>
                 <ComboBox fx:id="currencyBox"
-                          GridPane.rowIndex="1"
+                          GridPane.rowIndex="2"
                           GridPane.columnIndex="1"/>
             </GridPane>
             <HBox spacing="10">
@@ -40,6 +49,10 @@
                 <TableColumn fx:id="titleColumn"
                              text="Titre"
                              prefWidth="250"/>
+
+                <TableColumn fx:id="amountColumn"
+                             text="Montant"
+                             prefWidth="150"/>
 
                 <TableColumn fx:id="currencyColumn"
                              text="Devise"

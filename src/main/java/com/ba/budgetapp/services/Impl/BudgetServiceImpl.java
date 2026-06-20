@@ -10,7 +10,11 @@ import java.util.Optional;
 
 public class BudgetServiceImpl implements BudgetService {
 
-    private final BudgetDAO budgetDAO = new BudgetDAOImpl();
+    private final BudgetDAO budgetDAO;
+
+    public BudgetServiceImpl(BudgetDAO budgetDAO) {
+        this.budgetDAO = budgetDAO;
+    }
 
     @Override
     public boolean create(Budget budget) {

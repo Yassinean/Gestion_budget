@@ -12,8 +12,8 @@ import java.util.Optional;
 public class BudgetDAOImpl extends BaseDAO implements BudgetDAO {
 
     private static final String INSERT = """
-    INSERT INTO budgets(owner_id, title, currency)
-    VALUES (?, ?, ?)
+    INSERT INTO budgets(owner_id, title, amount, currency)
+    VALUES (?, ?, ?, ?)
     """;
 
     private static final String FIND_BY_ID = """
@@ -37,8 +37,7 @@ public class BudgetDAOImpl extends BaseDAO implements BudgetDAO {
 
     private static final String UPDATE = """
         UPDATE budgets
-        SET title = ?,
-            currency = ?
+        SET title = ?, amount = ?, currency = ?
         WHERE budget_id = ?
         """;
 
@@ -64,7 +63,8 @@ public class BudgetDAOImpl extends BaseDAO implements BudgetDAO {
         ) {
             ps.setLong(1, budget.getOwnerId());
             ps.setString(2, budget.getTitle());
-            ps.setString(3, budget.getCurrency());
+            ps.setBigDecimal(3,budget.getAmount());
+            ps.setString(4, budget.getCurrency());
             int affected = ps.executeUpdate();
             if (affected == 0) {
                 return false;
@@ -93,9 +93,11 @@ public class BudgetDAOImpl extends BaseDAO implements BudgetDAO {
 
             ps.setString(1, budget.getTitle());
 
-            ps.setString(2, budget.getCurrency());
+            ps.setBigDecimal(2, budget.getAmount());
 
-            ps.setLong(3, budget.getBudgetId());
+            ps.setString(3, budget.getCurrency());
+
+            ps.setLong(4, budget.getBudgetId());
 
             return ps.executeUpdate() > 0;
 
@@ -225,6 +227,8 @@ public class BudgetDAOImpl extends BaseDAO implements BudgetDAO {
         budget.setOwnerId(rs.getLong("owner_id"));
 
         budget.setTitle(rs.getString("title"));
+
+        budget.setAmount(rs.getBigDecimal("amount"));
 
         budget.setCurrency(rs.getString("currency"));
 

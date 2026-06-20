@@ -1,12 +1,13 @@
 package com.ba.budgetapp.models.entities;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.Objects;
 
 /**
  * Budget mensuel associé à une catégorie.
  *
- * @author Yassine
+ * @author Yassine / Ahlam / Salma / Aziza
  */
 
 public class Budget {
@@ -16,6 +17,8 @@ public class Budget {
     private Long ownerId;
 
     private String title;
+
+    private BigDecimal amount;
 
     private String currency;
 
@@ -29,6 +32,7 @@ public class Budget {
     public Budget(Long budgetId,
                   Long ownerId,
                   String title,
+                  BigDecimal amount,
                   String currency,
                   LocalDateTime createdAt,
                   LocalDateTime updatedAt) {
@@ -36,6 +40,7 @@ public class Budget {
         this.budgetId = budgetId;
         this.ownerId = ownerId;
         this.title = title;
+        this.amount = amount;
         this.currency = currency;
         this.createdAt = createdAt;
         this.updatedAt = updatedAt;
@@ -80,6 +85,14 @@ public class Budget {
         this.title = title;
     }
 
+    public BigDecimal getAmount() {
+        return amount;
+    }
+
+    public void setAmount(BigDecimal amount){
+        this.amount = amount;
+    }
+    
     public String getCurrency() {
         return currency;
     }
